@@ -1,5 +1,14 @@
 source 'https://rubygems.org'
 
+# ADDED BY ME
+
+gem 'gon'
+
+gem 'httparty'
+
+gem 'json'
+
+# ALREADY INCLUDED
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.2'
