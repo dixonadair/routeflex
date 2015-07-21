@@ -8,6 +8,10 @@ gem 'httparty'
 
 gem 'json'
 
+gem 'yelp', require: 'yelp'
+
+gem 'awesome_print'
+
 # ALREADY INCLUDED
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
