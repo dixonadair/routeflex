@@ -8,13 +8,20 @@
   <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
   <%= csrf_meta_tags %>
 
-  <script type="text/javascript"
+  <!-- The below traceur scripts may or may not work -->
+  <script data-require="traceur@*" data-semver="0.0.0-20140302" src="https://google.github.io/traceur-compiler/bin/traceur.js"></script>
+  <script data-require="traceur@*" data-semver="0.0.0-20140302" src="https://google.github.io/traceur-compiler/src/bootstrap.js"></script>
+
+  <!-- <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script> -->
+  <!-- <google-maps-api libraries="geometry,places"></google-maps-api> -->
+  <!-- <script type="text/javascript"
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBgUT0t3K3y9cKJgITa8X1O7uGYjguNZT4">
-  </script>
+  </script> -->
+  <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
 </head>
 <body>
-
-<%= yield %>
-
+	<%= yield %>
+	<!-- the below may not work -->
+	<!-- <script src="generators.js" type="module"></script> -->
 </body>
 </html>
