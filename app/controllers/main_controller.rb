@@ -14,7 +14,10 @@ class MainController < ApplicationController
   		config.token_secret = ENV['TOKEN_SECRET']
   	end
 
-  	parameters = { term: params[:stopLoc], limit: 5 }
+  	parameters1 = { term: params[:stopLoc1], limit: 5 }
+  	parameters2 = { term: params[:stopLoc2], limit: 5 }
+  	parameters3 = { term: params[:stopLoc3], limit: 5 }
+  	
   	p Yelp.client.search('San Francisco', parameters)
 
   	direct_route_url = "https://maps.googleapis.com/maps/api/directions/json?origin=#{origin}&destination=#{destination}&waypoints=#{pool_coords[1]},#{pool_coords[0]}&key=AIzaSyDirDB7V1F3KwSFublV4KmZPhOGnJ71BLE"

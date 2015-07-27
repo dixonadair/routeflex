@@ -27,6 +27,30 @@ $(function() {
 
 	// ====================================================
 
+	// get back directions from Google (promise)
+	var getDirections = function(requestParams) {
+		return new Promise(function(resolve, reject) {
+			directionsService.route(requestParams, function(response, status) {
+				resolve(response);
+			});
+		});
+	};
+
+	// ====================================================
+
+		// var sampleRequest = {
+	 //        origin: "343 Vernon St San Francisco, CA",
+	 //        destination: "633 Folsom St San Francisco, CA",
+	 //        travelMode: google.maps.TravelMode.DRIVING
+		// };
+
+		// var sampleDirectionsPromise = getDirections(sampleRequest);
+		// sampleDirectionsPromise.then(function(results) {
+		// 	console.log(results);
+		// });
+
+	// ====================================================
+
 	function compareStopOptions(optionsArr) {
 		var len = optionsArr.length;
 		var optionLoc; // current location option being dealt with
@@ -86,41 +110,50 @@ $(function() {
 
 	// ====================================================
 
-	function performSearch(requestParams) {
-	  var request = requestParams;
-	  service.radarSearch(request, callback);
-	}
-
-	var getStopOptions = function(results) {
-		var stopOptions = [];
-		for (var i=0, result; result=results[i]; i++) {
-		  createMarker(result);
-		  var stopOptLatLng = $(result)[0].geometry.location;
-		  // stopOptions.push(result);
-		  stopOptions.push(stopOptLatLng);
-		}
-		return stopOptions;
+	// return options for each location (e.g. all Safeways within search area) (promise)
+	// figure out how to take care of the "reject" condition
+	var performSearch = function(requestParams) {
+		return new Promise(function(resolve, reject) {
+			service.radarSearch(requestParams, function(stuff) {
+				resolve(stuff);
+			});
+		});
 	};
 
-	function callback(results, status) {
-	  if (status != google.maps.places.PlacesServiceStatus.OK) {
-	    alert(status);
-	    return;
-	  }
-	  var parsedOptions = new Promise(function(resolve, reject) {
-	  	getStopOptions(results, function(result) {
-	  		resolve(result);
-	  	});
-	  });
+	// -----------------------------------
 
-	  // var answer = getStopOptions(results);
-	  Promise.all([parsedOptions]).then(function(results) {
-	  	// console.log(results);
-	  	return results;
-	  })
-	  // console.log(stopOptions);
-	  // compareStopOptions(stopOptions);
-	}
+	// var getStopOptions = function(results) {
+	// 	var stopOptions = [];
+	// 	for (var i=0, result; result=results[i]; i++) {
+	// 	  createMarker(result);
+	// 	  var stopOptLatLng = $(result)[0].geometry.location;
+	// 	  // stopOptions.push(result);
+	// 	  stopOptions.push(stopOptLatLng);
+	// 	}
+	// 	return stopOptions;
+	// };
+
+	// function callback(results, status) {
+	//   if (status != google.maps.places.PlacesServiceStatus.OK) {
+	//     alert(status);
+	//     return;
+	//   }
+	//   // return results;
+	//   // -----------
+	//   var parsedOptions = new Promise(function(resolve, reject) {
+	//   	getStopOptions(results, function(result) {
+	//   		resolve(result);
+	//   	});
+	//   });
+
+	//   // var answer = getStopOptions(results);
+	//   Promise.all([parsedOptions]).then(function(results) {
+	//   	console.log(results);
+	//   	// return results;
+	//   })
+	//   // console.log(stopOptions);
+	//   // compareStopOptions(stopOptions);
+	// }
 
 	function createMarker(place) {
 	  var marker = new google.maps.Marker({
@@ -147,7 +180,7 @@ $(function() {
 	      infoWindow.open(map, marker);
 	    });
 	  });
-	}
+	};
 
 	// ====================================================
 
@@ -160,21 +193,10 @@ $(function() {
 	  });
 	};
 
-	// return options for each location (e.g. all Safeways within search area)
-	var getOptions = function(searchRequestParams) {
-		var options = new Promise(function(resolve, reject) {
-			performSearch(searchRequestParams, function(result) {
-				resolve(result);
-			});
-		});
-	};
-
 	// ====================================================
 
 	$('.submit-search').on('click', function(e) {
 		e.preventDefault();
-
-		// console.log("Hi");
 
 		var origin = "343 Vernon St San Francisco, CA"; // $('#origin_address');
 		var stopLoc1 = "Safeway"; // $('#stop_location_1');
@@ -204,10 +226,6 @@ $(function() {
 		var p1 = getGeo(origin);
 		var p2 = getGeo(destination);
 
-		// var stopLoc1Options;
-		// var stopLoc2Options;
-		// var stopLoc3Options;
-
 		Promise.all([p1, p2]).then(function(results){
 		  var p1result = results[0][0].geometry.location;
 		  var p2result = results[1][0].geometry.location;
@@ -218,23 +236,23 @@ $(function() {
 		  	  bounds: new google.maps.LatLngBounds(place1, place2),
 		  	  name: stopLoc1
 		  };
-
 		  var searchRequestParams2 = {
 		  	  bounds: new google.maps.LatLngBounds(place1, place2),
 		  	  name: stopLoc2
 		  };
-
 		  var searchRequestParams3 = {
 		  	  bounds: new google.maps.LatLngBounds(place1, place2),
 		  	  name: stopLoc3
 		  };
 
-		  var stopLoc1Options = getOptions(searchRequestParams1);
-		  var stopLoc2Options = getOptions(searchRequestParams2);
-		  var stopLoc3Options = getOptions(searchRequestParams3);
+		  var stop1Options = performSearch(searchRequestParams1);
+		  var stop2Options = performSearch(searchRequestParams2);
+		  var stop3Options = performSearch(searchRequestParams3);
 
-		  Promise.all([stopLoc1Options, stopLoc2Options, stopLoc3Options]).then(function(results) {
-		  	console.log(results);
+		  Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
+		  	for (var i=0; i<3; i++) {
+		  		console.log(results[i]);
+		  	}
 		  });
 		  // performSearch(searchRequestParams);
 		});
