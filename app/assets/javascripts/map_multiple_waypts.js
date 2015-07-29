@@ -16,7 +16,7 @@ $(function() {
 		// directionsDisplay = new google.maps.DirectionsRenderer();
 		var myLatlng = new google.maps.LatLng(37.766280, -122.420961);
 		var mapOptions = {
-	    	zoom: 4,
+	    	zoom: 12,
 	    	center: myLatlng
 		}
 		map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
@@ -60,7 +60,7 @@ $(function() {
 		for (var i=0; i<len; i++) {
 			optionLoc = optionsArr[i].geometry.location;
 			var waypts = [];
-			var gmapsLocObj = {location: new google.maps.LatLng(optionLoc.A, optionLoc.F)};
+			var gmapsLocObj = {location: new google.maps.LatLng(optionLoc.G, optionLoc.K)};
 			waypts.push(gmapsLocObj);
 		  	var request = {
 		        origin: "343 Vernon St San Francisco, CA",
@@ -120,14 +120,38 @@ $(function() {
 		});
 	};
 
-	// (promise) (get place details, such as name)
+	// ====================================================
+		// --- Jared Debugging ---
+
+		// var WTF_IS_HAPPENING={}
+
+		// // (promise) (get place details, such as name)
+		// var getPlaceDetails = function(place) {
+		// 	var promise = new Promise(function(resolve, reject) {
+		// 		var UUID = Math.random().toString().slice(2,8)
+
+		// 		service.getDetails(place, function(result, status) {
+		// 			if (UUID in WTF_IS_HAPPENING){ debugger }
+		// 			WTF_IS_HAPPENING[UUID] = {place:place, result:result}
+		// 			console.log(WTF_IS_HAPPENING)
+		// 			resolve(result);
+		// 		});
+		// 	});
+		// 	return promise.then(function(){ 45 }, function(){ debugger })
+		// };
+
+	// ====================================================
+
 	var getPlaceDetails = function(place) {
 		return new Promise(function(resolve, reject) {
 			service.getDetails(place, function(result, status) {
+				console.log(status);
 				resolve(result);
 			});
 		});
 	};
+
+	// ====================================================
 
 	function createMarker(place) {
 	  var marker = new google.maps.Marker({
@@ -169,11 +193,11 @@ $(function() {
 
 	// ====================================================
 
-		var costcogeo = getGeo("450 10th St San Francisco, CA 94103");
+		// var costcogeo = getGeo("450 10th St San Francisco, CA 94103");
 
-		costcogeo.then(function(results) {
-			console.log(results);
-		});
+		// costcogeo.then(function(results) {
+		// 	console.log(results);
+		// });
 
 	// ====================================================
 
@@ -200,8 +224,15 @@ $(function() {
 		var origin = "343 Vernon St San Francisco, CA"; // $('#origin_address');
 		var stopLoc1 = "Costco Wholesale"; // $('#stop_location_1');
 		var stopLoc2 = "CVS"; // $('#stop_location_2');
-		var stopLoc3 = "Target"; // $('#stop_location_3');
+		var stopLoc3 = "Trader Joe's"; // $('#stop_location_3');
 		var destination = "633 Folsom St San Francisco, CA"; // $('#destination_address');
+
+		// -------------------------------
+
+			// var stopLocNameArr = [];
+			// stopLocNameArr.push(stopLoc1);
+			// stopLocNameArr.push(stopLoc2);
+			// stopLocNameArr.push(stopLoc3);
 
 		// -------------------------------
 
@@ -228,8 +259,8 @@ $(function() {
 		Promise.all([p1, p2]).then(function(results){
 		  var p1result = results[0][0].geometry.location;
 		  var p2result = results[1][0].geometry.location;
-		  var place1 = new google.maps.LatLng(p1result.A, p1result.F);
-		  var place2 = new google.maps.LatLng(p2result.A, p2result.F);
+		  var place1 = new google.maps.LatLng(p1result.G, p1result.K);
+		  var place2 = new google.maps.LatLng(p2result.G, p2result.K);
 
 		  var searchRequestParams1 = {
 		  	  bounds: new google.maps.LatLngBounds(place1, place2),
@@ -248,82 +279,80 @@ $(function() {
 		  var stop2Options = performSearch(searchRequestParams2);
 		  var stop3Options = performSearch(searchRequestParams3);
 
-		  // var locDetailsPromise;
-		  // Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
-		  // 	locDetailsPromise =
-		  // });
+		  // -------------------------------
+
+			  // stop3Options.then(function(results) {
+			  // 	results.forEach(function(place) {
+			  // 		// console.log(place);
+			  // 		var placeDetails = getPlaceDetails(place);
+			  // 		placeDetails.then(function(result) {
+			  // 			if (result !== null) {
+			  // 				createMarker(place);
+			  // 				console.log(result.name);
+			  // 			};
+			  // 		});
+			  // 	});
+			  // });
 
 		  Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
-		  	var stopLocNameArr = ["Costco Wholesale", "CVS Pharmacy - Photo", "Target"];
+		  	// var stopLocNameArr = ["Costco Wholesale", "CVS Pharmacy - Photo", "Starbucks"];
 
-		  	console.log(results);
+		  	results.forEach(function(results) {
+		  		results.forEach(function(place) {
+		  			var placeDetails = getPlaceDetails(place);
+		  			placeDetails.then(function(result) {
+		  				if (result !== null) {
+		  					createMarker(place);
+		  					// console.log(result);
+		  					console.log(result.name);
+		  				};
+		  			});
+		  		});
+		  	});
 
-		  	// // ONE EXAMPLE
-		  	// var placeDetails = getPlaceDetails(results[2][0]);
-		  	// placeDetails.then(function(results) {
-		  	// 	console.log(results);
-		  	// 	// console.log(results.name);
-		  	// 	// if (results.name === stopLocNameArr[2]) {
-		  	// 	// 	createMarker(results);
-		  	// 	// };
-		  	// });
+		  	// -------------------------------
 
-			// var placeDetails1;
-		 //    for (var i=0; i<results[0].length; i++) {
-		 //    	placeDetails1 = getPlaceDetails(results[0][i]);
-		 //    	placeDetails1.then(function(results) {
-		 //    		console.log(results);
-		 //    		// console.log(results.name);
-		 //    		// if (results.name === stopLocNameArr[0]) {
-		 //    		// 	createMarker(results);
-		 //    		// 	// console.log("it works");
-		 //    		// };
-		 //    	});
-		 //    };
+			  	// results.forEach(function(results) {
+			  	// 	// console.log(results);
+			  	// 	results.forEach(function(place) {
+			  	// 		// console.log(place);
+			  	// 		var placeDetails = getPlaceDetails(place);
+			  	// 		placeDetails.then(function(result) {
+			  	// 			if (result !== null) {
+			  	// 				createMarker(place);
+			  	// 				console.log(result);
+			  	// 				// console.log(result.name);
+			  	// 			};
+			  	// 		});
+			  	// 	});
+			  	// });
 
-		 //    var placeDetails2;
-		 //    for (var j=0; j<results[1].length; j++) {
-		 //    	placeDetails2 = getPlaceDetails(results[1][j]);
-		 //    	placeDetails2.then(function(results) {
-		 //    		// console.log(results);
-		 //    		// console.log(results.name);
-		 //    		if (results.name === stopLocNameArr[1]) {
-		 //    			createMarker(results);
-		 //    			// console.log("it works");
-		 //    		};
-		 //    	});
-		 //    };
-
-		 //    var placeDetails3;
-		 //    for (var k=0; k<results[2].length; k++) {
-		 //    	placeDetails3 = getPlaceDetails(results[2][k]);
-		 //    	placeDetails3.then(function(results) {
-		 //    		// console.log(results);
-		 //    		// console.log(results.name);
-		 //    		createMarker(results);
-		 //    		// if (results.name === stopLocNameArr[2]) {
-		 //    		// 	createMarker(results);
-		 //    		// 	// console.log("it works");
-		 //    		// };
-		 //    	});
-		 //    };
-
-		  	// ITERATIVE (DO FOR EACH RESULT)
-			  	// for (var i=0; i<3; i++) {
-			  	// 	for (var j=0; j<results[i].length; j++) {
-			  	// 		var placeDetails = getPlaceDetails(results[i][j]);
-			  	// 		placeDetails.then(function(results) {
-			  	// 			console.log(results);
-			  	// 			// console.log(results[0].name);
-			  	// 			// if (results.name === stopLocNameArr[i]) {
-			  	// 			// 	// createMarker(results[i][j]);
-			  	// 			// 	console.log("it works");
+			  	// results.forEach(function(result) {
+			  	// 	result.forEach(function(place) {
+			  	// 		var placeDetails = getPlaceDetails(place);
+			  	// 		placeDetails.then(function(placeInfo) {
+			  	// 			console.log(placeInfo);
+			  	// 			// if(placeInfo !== null) {
+			  	// 			// 	console.log(placeInfo.name);
 			  	// 			// };
 			  	// 		});
-			  	// 	};
-			  	// };
+			  	// 	});
+			  	// });
 
-		  	// allCombinations(results[0], results[1], results[2]);
+			  	// console.log(results);
+
+			  	// // ONE EXAMPLE
+			  	// var placeDetails = getPlaceDetails(results[2][0]);
+			  	// placeDetails.then(function(results) {
+			  	// 	// console.log(results);
+			  	// 	console.log(results.name);
+			  	// 	// if (results.name === stopLocNameArr[2]) {
+			  	// 	// 	createMarker(results);
+			  	// 	// };
+			  	// });
+
+		  	// var combs = allCombinations(results[0], results[1], results[2]);
+		  	// console.log(combs);
 		  });
 		});
 	});
