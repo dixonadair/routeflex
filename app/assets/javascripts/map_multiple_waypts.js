@@ -120,40 +120,14 @@ $(function() {
 		});
 	};
 
-	// -----------------------------------
-
-	// var getStopOptions = function(results) {
-	// 	var stopOptions = [];
-	// 	for (var i=0, result; result=results[i]; i++) {
-	// 	  createMarker(result);
-	// 	  var stopOptLatLng = $(result)[0].geometry.location;
-	// 	  // stopOptions.push(result);
-	// 	  stopOptions.push(stopOptLatLng);
-	// 	}
-	// 	return stopOptions;
-	// };
-
-	// function callback(results, status) {
-	//   if (status != google.maps.places.PlacesServiceStatus.OK) {
-	//     alert(status);
-	//     return;
-	//   }
-	//   // return results;
-	//   // -----------
-	//   var parsedOptions = new Promise(function(resolve, reject) {
-	//   	getStopOptions(results, function(result) {
-	//   		resolve(result);
-	//   	});
-	//   });
-
-	//   // var answer = getStopOptions(results);
-	//   Promise.all([parsedOptions]).then(function(results) {
-	//   	console.log(results);
-	//   	// return results;
-	//   })
-	//   // console.log(stopOptions);
-	//   // compareStopOptions(stopOptions);
-	// }
+	// (promise) (get place details, such as name)
+	var getPlaceDetails = function(place) {
+		return new Promise(function(resolve, reject) {
+			service.getDetails(place, function(result, status) {
+				resolve(result);
+			});
+		});
+	};
 
 	function createMarker(place) {
 	  var marker = new google.maps.Marker({
@@ -195,11 +169,36 @@ $(function() {
 
 	// ====================================================
 
+		var costcogeo = getGeo("450 10th St San Francisco, CA 94103");
+
+		costcogeo.then(function(results) {
+			console.log(results);
+		});
+
+	// ====================================================
+
+	// return all combinations of location1, location2, and location3
+	var allCombinations = function(arr1, arr2, arr3) {
+		var possibilities = [];
+		var cur;
+		for (var i=0; i<arr1.length; i++) {
+			for (var j=0; j<arr2.length; j++) {
+				for (var k=0; k<arr3.length; k++) {
+					cur = [arr1[i], arr2[j], arr3[k]]
+					possibilities.push(cur);
+				};
+			};
+		};
+		return possibilities;
+	};
+
+	// ====================================================
+
 	$('.submit-search').on('click', function(e) {
 		e.preventDefault();
 
 		var origin = "343 Vernon St San Francisco, CA"; // $('#origin_address');
-		var stopLoc1 = "Safeway"; // $('#stop_location_1');
+		var stopLoc1 = "Costco Wholesale"; // $('#stop_location_1');
 		var stopLoc2 = "CVS"; // $('#stop_location_2');
 		var stopLoc3 = "Target"; // $('#stop_location_3');
 		var destination = "633 Folsom St San Francisco, CA"; // $('#destination_address');
@@ -249,14 +248,84 @@ $(function() {
 		  var stop2Options = performSearch(searchRequestParams2);
 		  var stop3Options = performSearch(searchRequestParams3);
 
+		  // var locDetailsPromise;
+		  // Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
+		  // 	locDetailsPromise =
+		  // });
+
 		  Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
-		  	for (var i=0; i<3; i++) {
-		  		console.log(results[i]);
-		  	}
+		  	var stopLocNameArr = ["Costco Wholesale", "CVS Pharmacy - Photo", "Target"];
+
+		  	console.log(results);
+
+		  	// // ONE EXAMPLE
+		  	// var placeDetails = getPlaceDetails(results[2][0]);
+		  	// placeDetails.then(function(results) {
+		  	// 	console.log(results);
+		  	// 	// console.log(results.name);
+		  	// 	// if (results.name === stopLocNameArr[2]) {
+		  	// 	// 	createMarker(results);
+		  	// 	// };
+		  	// });
+
+			// var placeDetails1;
+		 //    for (var i=0; i<results[0].length; i++) {
+		 //    	placeDetails1 = getPlaceDetails(results[0][i]);
+		 //    	placeDetails1.then(function(results) {
+		 //    		console.log(results);
+		 //    		// console.log(results.name);
+		 //    		// if (results.name === stopLocNameArr[0]) {
+		 //    		// 	createMarker(results);
+		 //    		// 	// console.log("it works");
+		 //    		// };
+		 //    	});
+		 //    };
+
+		 //    var placeDetails2;
+		 //    for (var j=0; j<results[1].length; j++) {
+		 //    	placeDetails2 = getPlaceDetails(results[1][j]);
+		 //    	placeDetails2.then(function(results) {
+		 //    		// console.log(results);
+		 //    		// console.log(results.name);
+		 //    		if (results.name === stopLocNameArr[1]) {
+		 //    			createMarker(results);
+		 //    			// console.log("it works");
+		 //    		};
+		 //    	});
+		 //    };
+
+		 //    var placeDetails3;
+		 //    for (var k=0; k<results[2].length; k++) {
+		 //    	placeDetails3 = getPlaceDetails(results[2][k]);
+		 //    	placeDetails3.then(function(results) {
+		 //    		// console.log(results);
+		 //    		// console.log(results.name);
+		 //    		createMarker(results);
+		 //    		// if (results.name === stopLocNameArr[2]) {
+		 //    		// 	createMarker(results);
+		 //    		// 	// console.log("it works");
+		 //    		// };
+		 //    	});
+		 //    };
+
+		  	// ITERATIVE (DO FOR EACH RESULT)
+			  	// for (var i=0; i<3; i++) {
+			  	// 	for (var j=0; j<results[i].length; j++) {
+			  	// 		var placeDetails = getPlaceDetails(results[i][j]);
+			  	// 		placeDetails.then(function(results) {
+			  	// 			console.log(results);
+			  	// 			// console.log(results[0].name);
+			  	// 			// if (results.name === stopLocNameArr[i]) {
+			  	// 			// 	// createMarker(results[i][j]);
+			  	// 			// 	console.log("it works");
+			  	// 			// };
+			  	// 		});
+			  	// 	};
+			  	// };
+
+		  	// allCombinations(results[0], results[1], results[2]);
 		  });
-		  // performSearch(searchRequestParams);
 		});
-		// console.log(stopOptions);
 	});
 
 	google.maps.event.addDomListener(window, 'load', initialize);
