@@ -51,63 +51,6 @@ $(function() {
 
 	// ====================================================
 
-	function compareStopOptions(optionsArr) {
-		var len = optionsArr.length;
-		var optionLoc; // current location option being dealt with
-		var gmapsLocObj; // google maps location object made from optionLoc
-		var bestTime = 100000000000000000; // arbitrarily large number
-		var bestResponse; // best route, set based on bestTime
-		for (var i=0; i<len; i++) {
-			optionLoc = optionsArr[i].geometry.location;
-			var waypts = [];
-			var gmapsLocObj = {location: new google.maps.LatLng(optionLoc.G, optionLoc.K)};
-			waypts.push(gmapsLocObj);
-		  	var request = {
-		        origin: "343 Vernon St San Francisco, CA",
-		        destination: "633 Folsom St San Francisco, CA",
-		        waypoints: waypts,
-		        optimizeWaypoints: true,
-		        travelMode: google.maps.TravelMode.DRIVING
-		  	};
-		  	directionsService.route(request, function(response, status) {
-		      	if (status === google.maps.DirectionsStatus.OK) {
-			      	var numOfTripLegs = response.routes[0].legs.length;
-			      	var tripDuration = 0;
-			      	var tripDistance = 0;
-			      	for (var i=0; i<numOfTripLegs; i++) {
-			      		tripDuration += response.routes[0].legs[i].duration.value;
-			      		tripDistance += response.routes[0].legs[i].distance.value;
-			      	};
-			      	console.log(tripDuration);
-			      	if (tripDuration < bestTime) {
-			      		bestTime = tripDuration;
-			      		bestResponse = response;
-			      	}
-
-			      	// ----------------------------------
-
-				    directionsDisplay.setDirections(bestResponse);
-			        // var route = response.routes[0];
-			        // console.log(route.legs[0].distance.text);
-
-			        // ----------------------------------
-				        // var summaryPanel = document.getElementById('directions_panel');
-				        // summaryPanel.innerHTML = '';
-				        // // For each route, display summary information.
-				        // for (var i = 0; i < route.legs.length; i++) {
-				        //   var routeSegment = i + 1;
-				        //   summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment + '</b><br>';
-				        //   summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
-				        //   summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
-				        //   summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
-				        // }
-		      	}
-		    });
-		};
-		// directionsDisplay.setDirections(bestResponse);
-		// console.log(bestTime);
-	};
-
 	// ====================================================
 
 	// return options for each location (e.g. all Safeways within search area) (promise)
@@ -216,45 +159,58 @@ $(function() {
 		return possibilities;
 	};
 
+  	function compareStopOptions(optionsArr, origin, destination) {
+  		var bestTime = 10000000000000000000; // arbitrarily large number
+  		var bestResponse; // best route, based on bestTime
+
+  		optionsArr.forEach(function(optionGroup) {
+  			var waypts = [];
+  			var pCoords;
+  			var placeObj;
+  			optionGroup.forEach(function(place) {
+  				pCoords = place.geometry.location;
+  				placeObj = {location: new google.maps.LatLng(pCoords.G, pCoords.K)}
+  				waypts.push(placeObj);
+  			});
+			var dirRequest = {
+		        origin: origin,
+		        destination: destination,
+		        waypoints: waypts,
+		        optimizeWaypoints: true,
+		        travelMode: google.maps.TravelMode.DRIVING
+		  	};
+		  	var dirPromise = getDirections(dirRequest);
+		  	dirPromise.then(function(response) {
+		  		var numTripLegs = response.routes[0].legs.length;
+		  		var tripDuration = 0;
+		  		var tripDistance = 0;
+		  		for (var i=0; i<numTripLegs; i++) {
+		  			tripDuration += response.routes[0].legs[i].duration.value;
+		  			tripDistance += response.routes[0].legs[i].distance.value;
+		  		};
+		  		console.log(tripDuration);
+		  		if (tripDuration < bestTime) {
+		  			bestTime = tripDuration;
+		  			bestResponse = response;
+		  		};
+		  		directionsDisplay.setDirections(bestResponse);
+		  	});
+  		});
+  	};
+
 	// ====================================================
+
+	var origin = "343 Vernon St San Francisco, CA"; // $('#origin_address');
+	var stopLoc1 = "Costco Wholesale"; // $('#stop_location_1');
+	var stopLoc2 = "CVS"; // $('#stop_location_2');
+	var stopLoc3 = "Trader Joe's"; // $('#stop_location_3');
+	var destination = "633 Folsom St San Francisco, CA"; // $('#destination_address');
+
+	var p1 = getGeo(origin);
+	var p2 = getGeo(destination);
 
 	$('.submit-search').on('click', function(e) {
 		e.preventDefault();
-
-		var origin = "343 Vernon St San Francisco, CA"; // $('#origin_address');
-		var stopLoc1 = "Costco Wholesale"; // $('#stop_location_1');
-		var stopLoc2 = "CVS"; // $('#stop_location_2');
-		var stopLoc3 = "Trader Joe's"; // $('#stop_location_3');
-		var destination = "633 Folsom St San Francisco, CA"; // $('#destination_address');
-
-		// -------------------------------
-
-			// var stopLocNameArr = [];
-			// stopLocNameArr.push(stopLoc1);
-			// stopLocNameArr.push(stopLoc2);
-			// stopLocNameArr.push(stopLoc3);
-
-		// -------------------------------
-
-			// var some = geocodeAddress("4645 Jett Rd Atlanta, GA 30327");
-			// console.log(some);
-
-			// origin = {location: geocodeAddress(origin)};
-			// origin = {location: new google.maps.LatLng(origin.A, origin.F)}
-			// destination = geocodeAddress(destination);
-			// destination = {location: new google.maps.LatLng(destination.A, destination.F)}
-
-			// --- Determine SW and NE corners of bounds (TBD) ---
-
-			// var temparr = [];
-			// temparr.push(geocodeAddress(origin));
-			// temparr.push(geocodeAddress(destination));
-			// var place1;
-			// var place2;
-			// if () {};
-
-		var p1 = getGeo(origin);
-		var p2 = getGeo(destination);
 
 		Promise.all([p1, p2]).then(function(results){
 		  var p1result = results[0][0].geometry.location;
@@ -279,24 +235,11 @@ $(function() {
 		  var stop2Options = performSearch(searchRequestParams2);
 		  var stop3Options = performSearch(searchRequestParams3);
 
-		  // -------------------------------
-
-			  // stop3Options.then(function(results) {
-			  // 	results.forEach(function(place) {
-			  // 		// console.log(place);
-			  // 		var placeDetails = getPlaceDetails(place);
-			  // 		placeDetails.then(function(result) {
-			  // 			if (result !== null) {
-			  // 				createMarker(place);
-			  // 				console.log(result.name);
-			  // 			};
-			  // 		});
-			  // 	});
-			  // });
-
 		  Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
-		  	// var stopLocNameArr = ["Costco Wholesale", "CVS Pharmacy - Photo", "Starbucks"];
+		  	// (optional) check if each place name corresponds to one of the following
+		  	var stopLocNameArr = ["Costco Wholesale", "CVS Pharmacy - Photo", "Starbucks"];
 
+		  	// Put each place marker on map and console.log(NAME_OF_PLACE)
 		  	results.forEach(function(results) {
 		  		results.forEach(function(place) {
 		  			var placeDetails = getPlaceDetails(place);
@@ -310,49 +253,11 @@ $(function() {
 		  		});
 		  	});
 
-		  	// -------------------------------
+		  	var combinations = allCombinations(results[0], results[1], results[2]);
+		  	console.log(combinations);
 
-			  	// results.forEach(function(results) {
-			  	// 	// console.log(results);
-			  	// 	results.forEach(function(place) {
-			  	// 		// console.log(place);
-			  	// 		var placeDetails = getPlaceDetails(place);
-			  	// 		placeDetails.then(function(result) {
-			  	// 			if (result !== null) {
-			  	// 				createMarker(place);
-			  	// 				console.log(result);
-			  	// 				// console.log(result.name);
-			  	// 			};
-			  	// 		});
-			  	// 	});
-			  	// });
+		  	compareStopOptions(combinations, origin, destination);
 
-			  	// results.forEach(function(result) {
-			  	// 	result.forEach(function(place) {
-			  	// 		var placeDetails = getPlaceDetails(place);
-			  	// 		placeDetails.then(function(placeInfo) {
-			  	// 			console.log(placeInfo);
-			  	// 			// if(placeInfo !== null) {
-			  	// 			// 	console.log(placeInfo.name);
-			  	// 			// };
-			  	// 		});
-			  	// 	});
-			  	// });
-
-			  	// console.log(results);
-
-			  	// // ONE EXAMPLE
-			  	// var placeDetails = getPlaceDetails(results[2][0]);
-			  	// placeDetails.then(function(results) {
-			  	// 	// console.log(results);
-			  	// 	console.log(results.name);
-			  	// 	// if (results.name === stopLocNameArr[2]) {
-			  	// 	// 	createMarker(results);
-			  	// 	// };
-			  	// });
-
-		  	// var combs = allCombinations(results[0], results[1], results[2]);
-		  	// console.log(combs);
 		  });
 		});
 	});
@@ -423,6 +328,58 @@ $(function() {
 	// var myRequest = {
 	// 	bounds: new google.maps.LatLngBounds(place1, place2),
 	// 	name: "Safeway"
+	// };
+
+// ====================================================
+
+	// var compareRoutes = function(options) {
+	// 	for (var i=0; i<len; i++) {
+	// 		optionLoc = optionsArr[i].geometry.location;
+	// 		var waypts = [];
+	// 		var gmapsLocObj = {location: new google.maps.LatLng(optionLoc.G, optionLoc.K)};
+	// 		waypts.push(gmapsLocObj);
+	// 	  	var request = {
+	// 	        origin: origin,
+	// 	        destination: destination,
+	// 	        waypoints: waypts,
+	// 	        optimizeWaypoints: true,
+	// 	        travelMode: google.maps.TravelMode.DRIVING
+	// 	  	};
+	// 	  	directionsService.route(request, function(response, status) {
+	// 	      	if (status === google.maps.DirectionsStatus.OK) {
+	// 		      	var numOfTripLegs = response.routes[0].legs.length;
+	// 		      	var tripDuration = 0;
+	// 		      	var tripDistance = 0;
+	// 		      	for (var i=0; i<numOfTripLegs; i++) {
+	// 		      		tripDuration += response.routes[0].legs[i].duration.value;
+	// 		      		tripDistance += response.routes[0].legs[i].distance.value;
+	// 		      	};
+	// 		      	console.log(tripDuration);
+	// 		      	if (tripDuration < bestTime) {
+	// 		      		bestTime = tripDuration;
+	// 		      		bestResponse = response;
+	// 		      	}
+
+	// 		      	// ----------------------------------
+
+	// 			    directionsDisplay.setDirections(bestResponse);
+	// 		        // var route = response.routes[0];
+	// 		        // console.log(route.legs[0].distance.text);
+
+	// 		        // ----------------------------------
+	// 			        // var summaryPanel = document.getElementById('directions_panel');
+	// 			        // summaryPanel.innerHTML = '';
+	// 			        // // For each route, display summary information.
+	// 			        // for (var i = 0; i < route.legs.length; i++) {
+	// 			        //   var routeSegment = i + 1;
+	// 			        //   summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment + '</b><br>';
+	// 			        //   summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+	// 			        //   summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+	// 			        //   summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+	// 			        // }
+	// 	      	}
+	// 	    });
+	// 	};
 	// };
 
 // var stopLoc = {location: new google.maps.LatLng(37.766280, -122.420961)};
