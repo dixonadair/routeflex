@@ -1,11 +1,32 @@
-html, body, #map-canvas {
+/*html, body, #map-canvas {
     height: 600px;
-    width: 1000px;
-    margin: 0;
+    width: 70%;
+    margin: 20px;
     padding: 0;
+}*/
+
+/*html, body, #map-canvas {
+	height: 600px;
+	width: 70%;
+	margin: 20px;
+	padding: 0;
+	position: relative;
+	display: inline-block;
+}*/
+
+#map-canvas {
+    height: 600px;
+    width: 70%;
+    margin: 20px;
+    padding: 0;
+    position: relative;
+    float: left;
+    display: inline-block;
 }
 
 .form {
-	/*float: right;*/
-	right: 20px;
+	width: 14%;
+	height: 100%;
+	float: left;
+	margin: 20px;
 }
