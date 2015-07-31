@@ -169,12 +169,16 @@ $(function() {
 		return possibilities;
 	};
 
+	// ====================================================
+
 	// compareStopOptions function with setTimeout (working semi-successfully but slow)
 	function compareStopOptions(optionsArr, origin, destination) {
 		var bestTime = 10000000000000000000; // arbitrarily large number
 		var bestResponse; // best route, based on bestTime
+		var bestWaypts; // the waypts that are visited when taking the best route
+		var len = 10; // optionsArr.length;
 
-		for (var i=0; i<optionsArr.length; i++) {
+		for (var i=0; i<len; i++) {
 			setTimeout(
 			(function(i) {
 				return function() {
@@ -208,8 +212,15 @@ $(function() {
 				  			if (tripDuration < bestTime) {
 				  				bestTime = tripDuration;
 				  				bestResponse = response;
+				  				// bestWaypts = waypts;
+				  				optionsArr[i].forEach(function(waypt) {
+				  					// getWayptDets(waypt);
+				  				});
+
 				  			};
 				  			directionsDisplay.setDirections(bestResponse);
+				  			// console.log(bestWaypts);
+				  			console.log(bestTime);
 				  		} else {
 				  			console.log("directions request: response was null");
 				  		};
@@ -217,6 +228,13 @@ $(function() {
 				};
 			})(i), i*150)
 		};
+	};
+
+	function getWayptDets(waypt) {
+		var dets = getPlaceDetails(waypt);
+		dets.then(function(result) {
+			console.log(result.name);
+		});
 	};
 
 	// ====================================================
@@ -286,6 +304,8 @@ $(function() {
 		  var stop3Options = performSearch(searchRequestParams3);
 
 		  Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
+		  	// console.log("results[0]", results[0]);
+
 		  	// (optional) check if each place name corresponds to one of the following
 		  	var stopLocNameArr = [stopLoc1, stopLoc2, stopLoc3];
 
@@ -314,7 +334,7 @@ $(function() {
 
 		    var combinations = allCombinationsThreeOptions(results[0], results[1], results[2])
 		  	// var combinations = allCombinationsTwoOptions(results[0], results[1]);
-		  	// console.log(combinations);
+		  	// console.log("combinations", combinations);
 
 		  	compareStopOptions(combinations, origin, destination);
 
