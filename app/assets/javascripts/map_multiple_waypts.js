@@ -142,14 +142,6 @@ $(function() {
 
 	// ====================================================
 
-		// var costcogeo = getGeo("450 10th St San Francisco, CA 94103");
-
-		// costcogeo.then(function(results) {
-		// 	console.log(results);
-		// });
-
-	// ====================================================
-
 	// return all combinations of location1, location2, and location3
 	var allCombinationsThreeOptions = function(arr1, arr2, arr3) {
 		var possibilities = [];
@@ -177,49 +169,55 @@ $(function() {
 		return possibilities;
 	};
 
-  	function compareStopOptions(optionsArr, origin, destination) {
-  		var bestTime = 10000000000000000000; // arbitrarily large number
-  		var bestResponse; // best route, based on bestTime
+	// compareStopOptions function with setTimeout (working semi-successfully but slow)
+	function compareStopOptions(optionsArr, origin, destination) {
+		var bestTime = 10000000000000000000; // arbitrarily large number
+		var bestResponse; // best route, based on bestTime
 
-  		optionsArr.forEach(function(optionGroup) {
-  			var waypts = [];
-  			var pCoords;
-  			var placeObj;
-  			optionGroup.forEach(function(place) {
-  				pCoords = place.geometry.location;
-  				placeObj = {location: new google.maps.LatLng(pCoords.G, pCoords.K)}
-  				waypts.push(placeObj);
-  			});
-			var dirRequest = {
-		        origin: origin,
-		        destination: destination,
-		        waypoints: waypts,
-		        optimizeWaypoints: true,
-		        travelMode: google.maps.TravelMode.DRIVING
-		  	};
-		  	var dirPromise = getDirections(dirRequest);
-		  	dirPromise.then(function(response) {
-		  		if (response !== null) {
-		  			// console.log('routes issue', response);
-		  			var numTripLegs = response.routes[0].legs.length;
-		  			var tripDuration = 0;
-		  			var tripDistance = 0;
-		  			for (var i=0; i<numTripLegs; i++) {
-		  				tripDuration += response.routes[0].legs[i].duration.value;
-		  				tripDistance += response.routes[0].legs[i].distance.value;
-		  			};
-		  			// console.log(tripDuration);
-		  			if (tripDuration < bestTime) {
-		  				bestTime = tripDuration;
-		  				bestResponse = response;
-		  			};
-		  			directionsDisplay.setDirections(bestResponse);
-		  		} else {
-		  			console.log("directions request: response was null");
-		  		};
-		  	});
-  		});
-  	};
+		for (var i=0; i<optionsArr.length; i++) {
+			setTimeout(
+			(function(i) {
+				return function() {
+					var waypts = [];
+					var pCoords;
+					var placeObj;
+					optionsArr[i].forEach(function(place) {
+						pCoords = place.geometry.location;
+						placeObj = {location: new google.maps.LatLng(pCoords.G, pCoords.K)}
+						waypts.push(placeObj);
+					});
+					var dirRequest = {
+				        origin: origin,
+				        destination: destination,
+				        waypoints: waypts,
+				        optimizeWaypoints: true,
+				        travelMode: google.maps.TravelMode.DRIVING
+				  	};
+				  	var dirPromise = getDirections(dirRequest);
+				  	dirPromise.then(function(response) {
+				  		if (response !== null) {
+				  			// console.log('routes issue', response);
+				  			var numTripLegs = response.routes[0].legs.length;
+				  			var tripDuration = 0;
+				  			var tripDistance = 0;
+				  			for (var i=0; i<numTripLegs; i++) {
+				  				tripDuration += response.routes[0].legs[i].duration.value;
+				  				tripDistance += response.routes[0].legs[i].distance.value;
+				  			};
+				  			// console.log(tripDuration);
+				  			if (tripDuration < bestTime) {
+				  				bestTime = tripDuration;
+				  				bestResponse = response;
+				  			};
+				  			directionsDisplay.setDirections(bestResponse);
+				  		} else {
+				  			console.log("directions request: response was null");
+				  		};
+				  	});
+				};
+			})(i), i*150)
+		};
+	};
 
 	// ====================================================
 
@@ -249,17 +247,17 @@ $(function() {
 		// var stopLoc3 = $('#stop_location_3').val(); // Trader Joe's
 		// var destination = $('#destination_address').val(); // 633 Folsom St San Francisco, CA
 
-		var origin = "1982 Rockledge Rd Atlanta, GA";
-		var stopLoc1 = "Wendy's";
-		var stopLoc2 = "Publix";
-		var stopLoc3 = "Ace Hardware";
-		var destination = "701 Chase Ln Norcross, GA";
+		// var origin = "1982 Rockledge Rd Atlanta, GA";
+		// var stopLoc1 = "Wendy's";
+		// var stopLoc2 = "Publix";
+		// var stopLoc3 = "Ace Hardware";
+		// var destination = "701 Chase Ln Norcross, GA";
 
-		// var origin = "343 Vernon St San Francisco, CA";
-		// var stopLoc1 = "Trader Joe's";
-		// var stopLoc2 = "Costco";
-		// var stopLoc3 = "Wells Fargo Bank";
-		// var destination = "633 Folsom St San Francisco, CA";
+		var origin = "343 Vernon St San Francisco, CA";
+		var stopLoc1 = "Trader Joe's";
+		var stopLoc2 = "Costco";
+		var stopLoc3 = "Wells Fargo Bank";
+		var destination = "633 Folsom St San Francisco, CA";
 
 		var p1 = getGeo(origin);
 		var p2 = getGeo(destination);
@@ -285,9 +283,9 @@ $(function() {
 
 		  var stop1Options = performSearch(searchRequestParams1);
 		  var stop2Options = performSearch(searchRequestParams2);
-		  // var stop3Options = performSearch(searchRequestParams3);
+		  var stop3Options = performSearch(searchRequestParams3);
 
-		  Promise.all([stop1Options, stop2Options]).then(function(results) {
+		  Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
 		  	// (optional) check if each place name corresponds to one of the following
 		  	var stopLocNameArr = [stopLoc1, stopLoc2, stopLoc3];
 
@@ -298,23 +296,24 @@ $(function() {
 		  		});
 		  	});
 
-		  	// Put each place marker on map ONLY if it has correct name
-		  	// results.forEach(function(results) {
-		  	// 	results.forEach(function(place) {
-		  	// 		// createMarker(place);
-		  	// 		var placeDetails = getPlaceDetails(place);
-		  	// 		placeDetails.then(function(result) {
-		  	// 			if (result!==null && stopLocNameArr.indexOf(result.name) !== -1) {
-		  	// 				createMarker(place);
-		  	// 				// console.log(result);
-		  	// 				// console.log(result.name);
-		  	// 			};
-		  	// 		});
-		  	// 	});
-		  	// });
+		  	// ------------------------------------------
+			  	// Put each place marker on map ONLY if it has correct name
+			  	// results.forEach(function(results) {
+			  	// 	results.forEach(function(place) {
+			  	// 		// createMarker(place);
+			  	// 		var placeDetails = getPlaceDetails(place);
+			  	// 		placeDetails.then(function(result) {
+			  	// 			if (result!==null && stopLocNameArr.indexOf(result.name) !== -1) {
+			  	// 				createMarker(place);
+			  	// 				// console.log(result);
+			  	// 				// console.log(result.name);
+			  	// 			};
+			  	// 		});
+			  	// 	});
+			  	// });
 
-		    // var combinations = allCombinationsThreeOptions(results[0], results[1], results[2])
-		  	var combinations = allCombinationsTwoOptions(results[0], results[1]);
+		    var combinations = allCombinationsThreeOptions(results[0], results[1], results[2])
+		  	// var combinations = allCombinationsTwoOptions(results[0], results[1]);
 		  	// console.log(combinations);
 
 		  	compareStopOptions(combinations, origin, destination);
@@ -442,6 +441,61 @@ $(function() {
 	// 	    });
 	// 	};
 	// };
+
+// ====================================================
+
+	// Original compareStopOptions function without setTimeout
+  	function compareStopOptions(optionsArr, origin, destination) {
+  		var bestTime = 10000000000000000000; // arbitrarily large number
+  		var bestResponse; // best route, based on bestTime
+
+  		optionsArr.forEach(function(optionGroup) {
+  			var waypts = [];
+  			var pCoords;
+  			var placeObj;
+  			optionGroup.forEach(function(place) {
+  				pCoords = place.geometry.location;
+  				placeObj = {location: new google.maps.LatLng(pCoords.G, pCoords.K)}
+  				waypts.push(placeObj);
+  			});
+			var dirRequest = {
+		        origin: origin,
+		        destination: destination,
+		        waypoints: waypts,
+		        optimizeWaypoints: true,
+		        travelMode: google.maps.TravelMode.DRIVING
+		  	};
+		  	var dirPromise = getDirections(dirRequest);
+		  	dirPromise.then(function(response) {
+		  		if (response !== null) {
+		  			// console.log('routes issue', response);
+		  			var numTripLegs = response.routes[0].legs.length;
+		  			var tripDuration = 0;
+		  			var tripDistance = 0;
+		  			for (var i=0; i<numTripLegs; i++) {
+		  				tripDuration += response.routes[0].legs[i].duration.value;
+		  				tripDistance += response.routes[0].legs[i].distance.value;
+		  			};
+		  			// console.log(tripDuration);
+		  			if (tripDuration < bestTime) {
+		  				bestTime = tripDuration;
+		  				bestResponse = response;
+		  			};
+		  			directionsDisplay.setDirections(bestResponse);
+		  		} else {
+		  			console.log("directions request: response was null");
+		  		};
+		  	});
+  		});
+	};
+
+// ====================================================
+
+	// var costcogeo = getGeo("450 10th St San Francisco, CA 94103");
+
+	// costcogeo.then(function(results) {
+	// 	console.log(results);
+	// });
 
 // var stopLoc = {location: new google.maps.LatLng(37.766280, -122.420961)};
 // var stopLoc2 = {location: "55 Brighton Ave San Francisco, CA 94112"};
