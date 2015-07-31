@@ -27,11 +27,17 @@ $(function() {
 
 	// ====================================================
 
+	var directionsCount = 0;
 	// get back directions from Google (promise)
 	var getDirections = function(requestParams) {
 		return new Promise(function(resolve, reject) {
 			directionsService.route(requestParams, function(response, status) {
 				resolve(response);
+				// console.log("getDirections status", status);
+				if (status !== "OVER_QUERY_LIMIT") {
+					directionsCount++;
+					console.log(directionsCount);
+				};
 			});
 		});
 	};
@@ -88,7 +94,7 @@ $(function() {
 	var getPlaceDetails = function(place) {
 		return new Promise(function(resolve, reject) {
 			service.getDetails(place, function(result, status) {
-				console.log(status);
+				// console.log("getPlaceDetails status", status);
 				resolve(result);
 			});
 		});
@@ -145,7 +151,7 @@ $(function() {
 	// ====================================================
 
 	// return all combinations of location1, location2, and location3
-	var allCombinations = function(arr1, arr2, arr3) {
+	var allCombinationsThreeOptions = function(arr1, arr2, arr3) {
 		var possibilities = [];
 		var cur;
 		for (var i=0; i<arr1.length; i++) {
@@ -154,6 +160,18 @@ $(function() {
 					cur = [arr1[i], arr2[j], arr3[k]]
 					possibilities.push(cur);
 				};
+			};
+		};
+		return possibilities;
+	};
+
+	var allCombinationsTwoOptions = function(arr1, arr2) {
+		var possibilities = [];
+		var cur;
+		for (var i=0; i<arr1.length; i++) {
+			for (var j=0; j<arr2.length; j++) {
+				cur = [arr1[i], arr2[j]]
+				possibilities.push(cur);
 			};
 		};
 		return possibilities;
@@ -181,36 +199,70 @@ $(function() {
 		  	};
 		  	var dirPromise = getDirections(dirRequest);
 		  	dirPromise.then(function(response) {
-		  		var numTripLegs = response.routes[0].legs.length;
-		  		var tripDuration = 0;
-		  		var tripDistance = 0;
-		  		for (var i=0; i<numTripLegs; i++) {
-		  			tripDuration += response.routes[0].legs[i].duration.value;
-		  			tripDistance += response.routes[0].legs[i].distance.value;
+		  		if (response !== null) {
+		  			// console.log('routes issue', response);
+		  			var numTripLegs = response.routes[0].legs.length;
+		  			var tripDuration = 0;
+		  			var tripDistance = 0;
+		  			for (var i=0; i<numTripLegs; i++) {
+		  				tripDuration += response.routes[0].legs[i].duration.value;
+		  				tripDistance += response.routes[0].legs[i].distance.value;
+		  			};
+		  			// console.log(tripDuration);
+		  			if (tripDuration < bestTime) {
+		  				bestTime = tripDuration;
+		  				bestResponse = response;
+		  			};
+		  			directionsDisplay.setDirections(bestResponse);
+		  		} else {
+		  			console.log("directions request: response was null");
 		  		};
-		  		console.log(tripDuration);
-		  		if (tripDuration < bestTime) {
-		  			bestTime = tripDuration;
-		  			bestResponse = response;
-		  		};
-		  		directionsDisplay.setDirections(bestResponse);
 		  	});
   		});
   	};
 
 	// ====================================================
 
-	var origin = "343 Vernon St San Francisco, CA"; // $('#origin_address');
-	var stopLoc1 = "Costco Wholesale"; // $('#stop_location_1');
-	var stopLoc2 = "CVS"; // $('#stop_location_2');
-	var stopLoc3 = "Trader Joe's"; // $('#stop_location_3');
-	var destination = "633 Folsom St San Francisco, CA"; // $('#destination_address');
+	// $('.seeInput').on('click', function(e) {
+	// 	e.preventDefault();
 
-	var p1 = getGeo(origin);
-	var p2 = getGeo(destination);
+	// 	var origin = $('#origin_address').val(); // 633 Folsom St San Francisco, CA
+	// 	var stopLoc1 = $('#stop_location_1').val(); // Costco
+	// 	var stopLoc2 = $('#stop_location_2').val(); // CVS
+	// 	var stopLoc3 = $('#stop_location_3').val(); // Trader Joe's
+	// 	var destination = $('#destination_address').val(); // 343 Vernon St San Francisco, CA
+
+	// 	var p1 = getGeo(origin);
+	// 	var p2 = getGeo(destination);
+
+	// 	console.log(origin);
+	// 	// console.log($('#origin_address'));
+	// 	// console.log(stopLoc1, stopLoc2, stopLoc3, destination);
+	// });
 
 	$('.submit-search').on('click', function(e) {
 		e.preventDefault();
+
+		// var origin = $('#origin_address').val(); // 343 Vernon St San Francisco, CA
+		// var stopLoc1 = $('#stop_location_1').val(); // Costco
+		// var stopLoc2 = $('#stop_location_2').val(); // CVS
+		// var stopLoc3 = $('#stop_location_3').val(); // Trader Joe's
+		// var destination = $('#destination_address').val(); // 633 Folsom St San Francisco, CA
+
+		var origin = "1982 Rockledge Rd Atlanta, GA";
+		var stopLoc1 = "Wendy's";
+		var stopLoc2 = "Publix";
+		var stopLoc3 = "Ace Hardware";
+		var destination = "701 Chase Ln Norcross, GA";
+
+		// var origin = "343 Vernon St San Francisco, CA";
+		// var stopLoc1 = "Trader Joe's";
+		// var stopLoc2 = "Costco";
+		// var stopLoc3 = "Wells Fargo Bank";
+		// var destination = "633 Folsom St San Francisco, CA";
+
+		var p1 = getGeo(origin);
+		var p2 = getGeo(destination);
 
 		Promise.all([p1, p2]).then(function(results){
 		  var p1result = results[0][0].geometry.location;
@@ -233,28 +285,37 @@ $(function() {
 
 		  var stop1Options = performSearch(searchRequestParams1);
 		  var stop2Options = performSearch(searchRequestParams2);
-		  var stop3Options = performSearch(searchRequestParams3);
+		  // var stop3Options = performSearch(searchRequestParams3);
 
-		  Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
+		  Promise.all([stop1Options, stop2Options]).then(function(results) {
 		  	// (optional) check if each place name corresponds to one of the following
-		  	var stopLocNameArr = ["Costco Wholesale", "CVS Pharmacy - Photo", "Starbucks"];
+		  	var stopLocNameArr = [stopLoc1, stopLoc2, stopLoc3];
 
-		  	// Put each place marker on map and console.log(NAME_OF_PLACE)
+		  	// Put each place marker on map, regardless
 		  	results.forEach(function(results) {
 		  		results.forEach(function(place) {
-		  			var placeDetails = getPlaceDetails(place);
-		  			placeDetails.then(function(result) {
-		  				if (result !== null) {
-		  					createMarker(place);
-		  					// console.log(result);
-		  					console.log(result.name);
-		  				};
-		  			});
+		  			createMarker(place);
 		  		});
 		  	});
 
-		  	var combinations = allCombinations(results[0], results[1], results[2]);
-		  	console.log(combinations);
+		  	// Put each place marker on map ONLY if it has correct name
+		  	// results.forEach(function(results) {
+		  	// 	results.forEach(function(place) {
+		  	// 		// createMarker(place);
+		  	// 		var placeDetails = getPlaceDetails(place);
+		  	// 		placeDetails.then(function(result) {
+		  	// 			if (result!==null && stopLocNameArr.indexOf(result.name) !== -1) {
+		  	// 				createMarker(place);
+		  	// 				// console.log(result);
+		  	// 				// console.log(result.name);
+		  	// 			};
+		  	// 		});
+		  	// 	});
+		  	// });
+
+		    // var combinations = allCombinationsThreeOptions(results[0], results[1], results[2])
+		  	var combinations = allCombinationsTwoOptions(results[0], results[1]);
+		  	// console.log(combinations);
 
 		  	compareStopOptions(combinations, origin, destination);
 
