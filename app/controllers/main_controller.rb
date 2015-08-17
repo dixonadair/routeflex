@@ -30,5 +30,8 @@ class MainController < ApplicationController
   	# hp_response = JSON.parse(hp_response)
 
   	# ... to be continued
+
+    response = {}
+    render json: response
   end
 end
