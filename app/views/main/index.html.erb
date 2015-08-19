@@ -4,11 +4,16 @@
 	<h1>Routeflex</h1>
 	<h5>Efficient routing for trips with multiple stops!</h5>
 	<p>You need to stop by a Starbucks, a pharmacy, and a Costco on your way home from work...but what's the most efficient route? There are many Starbucks and pharmacies along your way; you only need to stop at one of each, and don't really care which one it is. Routeflex is the solution you're looking for!</p>
-	<input id='origin_address' class='search-ui' placeholder='Start Address'>
-	<input id='stop_location_1' class='search-ui' placeholder='Stop 1 (e.g. "CVS")'>
-	<input id='stop_location_2' class='search-ui' placeholder='Stop 2 (e.g. "Costco")'>
-	<input id='stop_location_3' class='search-ui' placeholder='Stop 3 (e.g. "Target")'>
-	<input id='destination_address' class='search-ui' placeholder='End Address'>
+	<nav class="menu-ui">
+		<a href="#" class="out-and-back">Out-and-Back</a>
+		<a href="#" class="on-my-way">On-my-Way</a>
+	</nav>
+	<input class='origin_address' class='search-ui' placeholder='Start Address'>
+	<input class='stop_location_1' class='search-ui' placeholder='Stop 1 (e.g. "CVS")'>
+	<button class="add-stop">Add stop</button>
+	<!-- <input class='stop_location_2' class='search-ui' placeholder='Stop 2 (e.g. "Costco")'> -->
+	<!-- <input class='stop_location_3' class='search-ui' placeholder='Stop 3 (e.g. "Target")'> -->
+	<input class='destination_address' class='search-ui' placeholder='End Address'>
 	<button class="submit-search">Enter</button>
 	<!-- <button class="seeInput">See Input</button> -->
 </div>

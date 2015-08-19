@@ -12,6 +12,8 @@ $(function() {
 	var infoWindow;
 	var map;
 	var directionsService = new google.maps.DirectionsService();
+	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
+	var oneWayOrReturn = "on-my-way";
 
 	function initialize() {
 		// console.log("initialize function has run");
@@ -403,6 +405,10 @@ $(function() {
 
 	// ====================================================
 
+	// ADD STOP FUNCTION IS IN ITS OWN JS FILE CALLED ADD_STOP.JS
+
+	// ====================================================
+
 	// From JS Fiddle for use with Clipper Library
 	// function scaleup(poly, scale) {
 	//   var i, j;
@@ -416,14 +422,27 @@ $(function() {
 	//   return poly;
 	// };
 
+	// ========= MAIN FUNCTION TO DEAL WITH USER CLICKING ENTER =========
 	$('.submit-search').on('click', function(e) {
 		e.preventDefault();
 
-		// var origin = $('#origin_address').val(); // 343 Vernon St San Francisco, CA
-		// var stopLoc1 = $('#stop_location_1').val(); // Costco
-		// var stopLoc2 = $('#stop_location_2').val(); // CVS
-		// var stopLoc3 = $('#stop_location_3').val(); // Trader Joe's
-		// var destination = $('#destination_address').val(); // 633 Folsom St San Francisco, CA
+		// var origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
+		// var stopLoc1 = $('.stop_location_1').val(); // Costco
+		// var stopLoc2 = $('.stop_location_2').val(); // CVS
+		// var stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
+		// var destination = $('.destination_address').val(); // 633 Folsom St San Francisco, CA
+
+		// var origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
+		// var stopLoc1 = $('.stop_location_1').val(); // Costco
+		// var stopLoc2 = null;
+		// if ($('.stop_location_2').length) {
+		// 	stopLoc2 = $('.stop_location_2').val(); // CVS
+		// };
+		// var stopLoc3 = null;
+		// if ($('.stop_location_3').length) {
+		// 	stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
+		// };
+		// var destination = $('.destination_address').val(); // 633 Folsom St San Francisco, CA
 
 		// var origin = "1982 Rockledge Rd Atlanta, GA";
 		// var stopLoc1 = "Wendy's";
@@ -434,8 +453,18 @@ $(function() {
 		var origin = "633 Folsom St San Francisco, CA";
 		var stopLoc1 = "Trader Joe's";
 		var stopLoc2 = "CVS";
+		// var stopLoc3 = null;
 		var stopLoc3 = "Costco";
 		var destination = "343 Vernon St San Francisco, CA";
+
+		var numStops;
+		if (stopLoc3 !== null) {
+			numStops = 3;
+		} else if (stopLoc2 !== null) {
+			numStops = 2;
+		} else {
+			numStops = 1;
+		}
 
 		var p1 = getGeo(origin);
 		var p2 = getGeo(destination);
@@ -459,25 +488,37 @@ $(function() {
 		    var p1result = results[0][0].geometry.location;
 		    var p2result = results[1][0].geometry.location;
 
-
+		    // set up rectangular search bounds
 		    var bounds = makeBounds(p1result, p2result);
+
+		    // search request params for each stop entry
 		    var searchRequestParams1 = {
 		    	bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
 		    	name: stopLoc1
 		    };
-		    var searchRequestParams2 = {
-		    	bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-		    	name: stopLoc2
+		    if (numStops >= 2) {
+		    	var searchRequestParams2 = {
+		    		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
+		    		name: stopLoc2
+		    	};
 		    };
-		    var searchRequestParams3 = {
-		    	bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-		    	name: stopLoc3
+		    if (numStops >= 3) {
+		    	var searchRequestParams3 = {
+		    		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
+		    		name: stopLoc3
+		    	};
 		    };
 
+		    // set up promises for each search of stop within bounds area
 		    var stop1Options = performSearch(searchRequestParams1);
-		    var stop2Options = performSearch(searchRequestParams2);
-		    var stop3Options = performSearch(searchRequestParams3);
+		    if (numStops >= 2) {
+		    	var stop2Options = performSearch(searchRequestParams2);
+		    };
+		    if (numStops >= 3) {
+		    	var stop3Options = performSearch(searchRequestParams3);
+		    };
 
+		    // direct directions request (get non-stop route going from origin to destination)
 		    var directDirRequest = {
 		    	origin: origin,
 		    	destination: destination,
@@ -490,9 +531,26 @@ $(function() {
 	      		var myShape = makeBuffer(results);
 	      		console.log(myShape, "myShape");
 
-      		  	Promise.all([stop1Options, stop2Options, stop3Options]).then(function(results) {
+	      		var promises = [];
+	      		promises.push(stop1Options);
+	      		if (numStops >= 2) {
+	      			promises.push(stop2Options);
+	      		};
+	      		if (numStops >= 3) {
+	      			promises.push(stop3Options);
+	      		};
+
+	      		// [stop1Options, stop2Options, stop3Options]
+      		  	Promise.all(promises).then(function(results) {
       		  		// (optional) check if each place name corresponds to one of the following
-      		  		var stopLocNameArr = [stopLoc1, stopLoc2, stopLoc3];
+      		  		var stopLocNameArr = [stopLoc1];
+      		  		if (numStops >= 2) {
+      		  			stopLocNameArr.push(stopLoc2);
+      		  		};
+      		  		if (numStops >= 3) {
+      		  			stopLocNameArr.push(stopLoc3);
+      		  		};
+      		  		// var stopLocNameArr = [stopLoc1, stopLoc2, stopLoc3];
 
       		  		// ------------------------------------------
 	      		  		// // Put each place marker on map, regardless
@@ -503,8 +561,15 @@ $(function() {
 	      		  		// });
 
       		  		// Put each place marker on map if inside polyline buffer, and remove options not inside polyline buffer
+      		  		var newResults;
+      		  		if (numStops === 3) {
+      		  			newResults = [[],[],[]];
+      		  		} else if (numStops === 2) {
+      		  			newResults = [[],[]];
+      		  		} else if (numStops === 1) {
+      		  			newResults = [[]];
+      		  		};
       		  		var newLatLng, newCoords;
-      		  		var newResults = [[],[],[]];
       		  		results.forEach(function(results, index0to2) {
       		  			results.forEach(function(place, index) {
       		  				newCoords = place.geometry.location;
@@ -512,7 +577,7 @@ $(function() {
       		  				if ( google.maps.geometry.poly.containsLocation(newLatLng, myShape) && notTooClose(place, newResults[index0to2]) === true ) {
       		  					createMarker(place);
       		  					newResults[index0to2].push(place);
-      		  				}
+      		  				};
       		  			});
       		  		});
 
@@ -541,11 +606,14 @@ $(function() {
 						// console.log(newResults[0].length, "newResults[0].length");
 						// console.log(newResults[1].length, "newResults[1].length");
 						// console.log(newResults[2].length, "newResults[2].length");
-
-      		    	// var combinations = allCombinationsThreeOptions(results[0], results[1], results[2]);
-      		    	var combinations = allCombinationsThreeOptions(newResults[0], newResults[1], newResults[2]);
-      		  		// var combinations = allCombinationsTwoOptions(results[0], results[1]);
-      		  		// console.log("combinations", combinations);
+					var combinations;
+					if (numStops === 3) {
+						combinations = allCombinationsThreeOptions(newResults[0], newResults[1], newResults[2]);
+					} else if (numStops === 2) {
+						combinations = allCombinationsTwoOptions(newResults[0], newResults[1]);
+					} else if (numStops === 1) {
+						// ...
+					};
       		  		var bestRouteBy = "time";
       		  		compareStopOptions(combinations, origin, destination, bestRouteBy);
       		  	});
