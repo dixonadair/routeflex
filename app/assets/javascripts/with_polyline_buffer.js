@@ -459,6 +459,7 @@ $(function() {
 
 	// Make sure that two locations of the same category (e.g. two given results from searching for "Costco" in a certain area) are not so close to each other such as to make it inefficient to consider the points as separate possibilities in the compareStopOptions function. Sometimes, each department of a big box store, for instance, "Costco Vision Center" and "Costco Tire Center", are considered as separate entities even though it's all the same Costco.
 
+	// compares each point to each other point in existing array
 	function notTooClose(point, arrOfPts) {
 		if (arrOfPts === []) {
 			return true;
@@ -477,6 +478,17 @@ $(function() {
 			}
 		});
 		return farEnough;
+	};
+
+	// eliminates all overly close points for whole array of points
+	function cullNeighboringDuplicates(arrOfPts) {
+		var acceptedPts = [arrOfPts[0]]; // need first point as "starting point" for comparison of subsequent ones
+		arrOfPts.forEach(function(point) {
+			if (notTooClose(point, acceptedPts) === true) {
+				acceptedPts.push(point);
+			};
+		});
+		return acceptedPts;
 	};
 
 	// ====================================================
@@ -620,20 +632,22 @@ $(function() {
 					} else if (numStops === 1) {
 						newResults = [[]];
 					};
-					var newLatLng, newCoords;
+
+					// var culled3 = cullNeighboringDuplicates(results[2]);
+					// console.log(culled3, "culled3");
+					// console.log(results[2], "results[2]");
+
 					results.forEach(function(results1, index0to2) {
-
 						newResults[index0to2] = cullNeighboringDuplicates(results1);
-
-						results1.forEach(function(place, index) {
-							newCoords = place.geometry.location;
-							newLatLng = new google.maps.LatLng(newCoords.G, newCoords.K);
-							if ( notTooClose(place, newResults[index0to2]) === true ) {
-								createMarker(place);
-								newResults[index0to2].push(place);
-							};
+						// console.log(results1);
+					});
+					newResults.forEach(function(results) {
+						results.forEach(function(result) {
+							createMarker(result);
 						});
 					});
+
+					console.log(newResults);
 
 					var combinations;
 					if (numStops === 3) {
@@ -644,19 +658,9 @@ $(function() {
 						// ...
 					};
       		  		var bestRouteBy = "time";
-      		  		// console.log(combinations);
+      		  		console.log(combinations);
 
-      		  		// results[0].forEach(function(result) {
-      		  		// 	createMarker(result);
-      		  		// });
-      		  		// results[1].forEach(function(result) {
-      		  		// 	createMarker(result);
-      		  		// });
-      		  		// results[2].forEach(function(result) {
-      		  		// 	createMarker(result);
-      		  		// });
-
-      		  		// compareStopOptions(combinations, origin, destination, bestRouteBy);
+      		  		compareStopOptions(combinations, origin, destination, bestRouteBy);
 				});
 			});
 
