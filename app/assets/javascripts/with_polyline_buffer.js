@@ -13,7 +13,7 @@ $(function() {
 	var map;
 	var directionsService = new google.maps.DirectionsService();
 	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
-	var oneWayOrReturn = "out-and-back";
+	var oneWayOrReturn = "on-my-way";
 
 	function initialize() {
 		// console.log("initialize function has run");
@@ -29,39 +29,7 @@ $(function() {
 		infoWindow = new google.maps.InfoWindow();
 		service = new google.maps.places.PlacesService(map);
 		directionsDisplay.setMap(map);
-
-		// ----------------------
-
-		// var pyrmont = new google.maps.LatLng(-33.8665433,151.1956316);
-		// var request = {
-		//   location: pyrmont,
-		//   radius: '500',
-		//   types: ['store']
-		// };
-		// service.nearbySearch(request, callback);
-
-		// ----------------------
-
-		// var nbRequest = {
-		// 	location: new google.maps.LatLng(-33.8665433,151.1956316),
-		// 	radius: '500',
-		// 	types: ['store']
-		// };
-
-		// var nearbyTest = performNearbySearch(nbRequest);
-		// nearbyTest.then(function(results) {
-		// 	console.log(results);
-		// });
 	};
-
-	// function callback(results, status) {
-	//   if (status === google.maps.places.PlacesServiceStatus.OK) {
-	//     for (var i = 0; i < results.length; i++) {
-	//       // createMarker(results[i]);
-	//       console.log(results[i]);
-	//     };
-	//   };
-	// };
 
 	// ====================================================
 
@@ -493,36 +461,33 @@ $(function() {
 		e.preventDefault();
 		console.log(oneWayOrReturn);
 
-		// var origin, stopLoc1, stopLoc2, stopLoc3, destination = null;
+		var origin, stopLoc1, stopLoc2, stopLoc3, destination = null; // Don't Comment out!
+		var bestRouteBy = "time"; // "distance" or "time"
 
 		if (oneWayOrReturn === "out-and-back") {
 
-			var origin, stopLoc1, stopLoc2, stopLoc3, destination = null; // Don't Comment out!
+			var origin = "633 Folsom St San Francisco, CA";
+			var stopLoc1 = "Costco";
+			var stopLoc2 = "Trader Joe's";
+			var stopLoc3 = "Walgreens";
+			var destination = origin;
 
-			// var origin = "633 Folsom St San Francisco, CA";
-			// var stopLoc1 = "CVS";
-			// var stopLoc2 = "Trader Joe's";
-			// var stopLoc3 = "Costco";
-			// var destination = origin;
-
-			origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
-			stopLoc1 = $('.stop_location_1').val(); // Costco
-			if ($('.stop_location_2').length) {
-				console.log("stopLoc2 is here");
-				stopLoc2 = $('.stop_location_2').val(); // CVS
-			};
-			if ($('.stop_location_3').length) {
-				console.log("stopLoc3 is here");
-				stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
-			};
-			destination = origin;
+			// origin = $('.origin_address').val(); // 55 Brighton Ave San Francisco, CA
+			// stopLoc1 = $('.stop_location_1').val(); // Costco
+			// if ($('.stop_location_2').length) {
+			// 	console.log("stopLoc2 is here");
+			// 	stopLoc2 = $('.stop_location_2').val(); // CVS
+			// };
+			// if ($('.stop_location_3').length) {
+			// 	console.log("stopLoc3 is here");
+			// 	stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
+			// };
+			// destination = origin;
 
 			var numStops;
 			if (stopLoc3 !== null && stopLoc3 !== undefined) {
-				console.log("for some fucking stupid reason stopLoc3 is not null");
 				numStops = 3;
 			} else if (stopLoc2 !== null && stopLoc2 !== undefined) {
-				console.log("stopLoc2 is not null");
 				numStops = 2;
 			} else {
 				numStops = 1;
@@ -542,7 +507,7 @@ $(function() {
 
 				// ----- With nearbySearch -----
 
-				var setRadius = '2000';
+				var setRadius = '3000';
 				searchParams1 = {
 					location: searchAroundHere,
 					radius: setRadius,
@@ -604,7 +569,7 @@ $(function() {
 
 				Promise.all(searchResultsPromises).then(function(results) {
 					console.log(results, "results from all 1 or 2 or 3 promises");
-					
+
 					var newResults;
 					if (numStops === 3) {
 						newResults = [[],[],[]];
@@ -641,15 +606,12 @@ $(function() {
 					} else if (numStops === 1) {
 						// ...
 					};
-      		  		var bestRouteBy = "time";
       		  		console.log(combinations, "combinations");
 
       		  		compareStopOptions(combinations, origin, destination, bestRouteBy);
 				});
 			});
 		} else if (oneWayOrReturn === "on-my-way") {
-
-			var origin, stopLoc1, stopLoc2, stopLoc3, destination = null; // Don't comment out!
 
 			// origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
 			// stopLoc1 = $('.stop_location_1').val(); // Costco
@@ -669,14 +631,14 @@ $(function() {
 
 			var origin = "633 Folsom St San Francisco, CA";
 			var stopLoc1 = "Trader Joe's";
-			var stopLoc2 = "CVS";
+			var stopLoc2 = "Walgreens";
 			var stopLoc3 = "Costco";
-			var destination = "343 Vernon St San Francisco, CA";
+			var destination = "55 Brighton Ave San Francisco, CA";
 
 			var numStops;
-			if (stopLoc3 !== null) {
+			if (stopLoc3 !== null && stopLoc3 !== undefined) {
 				numStops = 3;
-			} else if (stopLoc2 !== null) {
+			} else if (stopLoc2 !== null && stopLoc2 !== undefined) {
 				numStops = 2;
 			} else {
 				numStops = 1;
@@ -805,7 +767,6 @@ $(function() {
 						} else if (numStops === 1) {
 							// ...
 						};
-	      		  		var bestRouteBy = "time";
 	      		  		compareStopOptions(combinations, origin, destination, bestRouteBy);
 	      		  	});
 		        });
