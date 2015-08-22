@@ -65,28 +65,6 @@ $(function() {
 
 	// ====================================================
 
-	// var paths = [[{X:10,Y:10},{X:110,Y:10},{X:110,Y:110},{X:10,Y:110}],
-	//              [{X:20,Y:20},{X:20,Y:100},{X:100,Y:100},{X:100,Y:20}]]; 
-	// var co1 = new ClipperLib.ClipperOffset(2, 0.25);
-	// co1.AddPaths(paths, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon);
-	// console.log(co1);
-
-	  // var polygons = [[{"X":72,"Y":39.55},{"X":136,"Y":66},{"X":170,"Y":99},{"X":171,"Y":114},{"X":183,"Y":125},{"X":218,"Y":165},{"X":254,"Y":195},{"X":283,"Y":195},{"X":292,"Y":202},{"X":325,"Y":213},{"X":397,"Y":245},{"X":417,"Y":248}]]; 
-	  // var scale = 100;
-	  // // reverse_copy(polygons);
-	  // polygons = scaleup(polygons, scale);
-	  // var cpr = new ClipperLib.Clipper();
-	  // var delta = 25;
-	  // var joinType = ClipperLib.JoinType.jtRound;
-	  // var miterLimit = 2;
-	  // var AutoFix = true;
-	  // var svg, offsetted_polygon;
-	  // // cont = document.getElementById('svgcontainer');
-	  // offsetted_polygon = cpr.OffsetPolygons(polygons, delta * scale, joinType, miterLimit, AutoFix);
-	  // console.log(offsetted_polygon);
-
-	// ====================================================
-
 	var directionsCount = 0;
 	// get back directions from Google (promise)
 	var getDirections = function(requestParams) {
@@ -513,37 +491,38 @@ $(function() {
 	// ========= MAIN FUNCTION TO DEAL WITH USER CLICKING ENTER =========
 	$('.submit-search').on('click', function(e) {
 		e.preventDefault();
+		console.log(oneWayOrReturn);
 
 		// var origin, stopLoc1, stopLoc2, stopLoc3, destination = null;
 
-		// ------------------------------------
-
-			// var nbRequest = {
-			// 	location: new google.maps.LatLng(-33.8665433,151.1956316),
-			// 	radius: '500', // radius is in meters
-			// 	types: ['store']
-			// };
-
-			// var nearbyTest = performNearbySearch(nbRequest);
-			// nearbyTest.then(function(results) {
-			// 	console.log(results);
-			// });
-
-		// ------------------------------------
-
 		if (oneWayOrReturn === "out-and-back") {
-			var origin, stopLoc1, stopLoc2, stopLoc3, destination = null;
 
-			var origin = "633 Folsom St San Francisco, CA";
-			var stopLoc1 = "CVS";
-			var stopLoc2 = "Trader Joe's";
-			var stopLoc3 = "Costco";
-			var destination = origin;
+			var origin, stopLoc1, stopLoc2, stopLoc3, destination = null; // Don't Comment out!
+
+			// var origin = "633 Folsom St San Francisco, CA";
+			// var stopLoc1 = "CVS";
+			// var stopLoc2 = "Trader Joe's";
+			// var stopLoc3 = "Costco";
+			// var destination = origin;
+
+			origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
+			stopLoc1 = $('.stop_location_1').val(); // Costco
+			if ($('.stop_location_2').length) {
+				console.log("stopLoc2 is here");
+				stopLoc2 = $('.stop_location_2').val(); // CVS
+			};
+			if ($('.stop_location_3').length) {
+				console.log("stopLoc3 is here");
+				stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
+			};
+			destination = origin;
 
 			var numStops;
-			if (stopLoc3 !== null) {
+			if (stopLoc3 !== null && stopLoc3 !== undefined) {
+				console.log("for some fucking stupid reason stopLoc3 is not null");
 				numStops = 3;
-			} else if (stopLoc2 !== null) {
+			} else if (stopLoc2 !== null && stopLoc2 !== undefined) {
+				console.log("stopLoc2 is not null");
 				numStops = 2;
 			} else {
 				numStops = 1;
@@ -624,6 +603,8 @@ $(function() {
 				// ----------------------------------
 
 				Promise.all(searchResultsPromises).then(function(results) {
+					console.log(results, "results from all 1 or 2 or 3 promises");
+					
 					var newResults;
 					if (numStops === 3) {
 						newResults = [[],[],[]];
@@ -633,21 +614,24 @@ $(function() {
 						newResults = [[]];
 					};
 
-					// var culled3 = cullNeighboringDuplicates(results[2]);
-					// console.log(culled3, "culled3");
-					// console.log(results[2], "results[2]");
+					// console.log(newResults, "newResults before pushing stuff in");
+
+					// -------------------------------------
+						// var culled3 = cullNeighboringDuplicates(results[2]);
+						// console.log(culled3, "culled3");
+						// console.log(results[2], "results[2]");
 
 					results.forEach(function(results1, index0to2) {
 						newResults[index0to2] = cullNeighboringDuplicates(results1);
-						// console.log(results1);
 					});
 					newResults.forEach(function(results) {
 						results.forEach(function(result) {
+							// console.log(result, "result to make marker out of");
 							createMarker(result);
 						});
 					});
 
-					console.log(newResults);
+					// console.log(newResults, "newResults");
 
 					var combinations;
 					if (numStops === 3) {
@@ -658,15 +642,15 @@ $(function() {
 						// ...
 					};
       		  		var bestRouteBy = "time";
-      		  		console.log(combinations);
+      		  		console.log(combinations, "combinations");
 
       		  		compareStopOptions(combinations, origin, destination, bestRouteBy);
 				});
 			});
-
-			// var stop1Options = performNearbySearch(); ....
 		} else if (oneWayOrReturn === "on-my-way") {
-			var origin, stopLoc1, stopLoc2, stopLoc3, destination = null;
+
+			var origin, stopLoc1, stopLoc2, stopLoc3, destination = null; // Don't comment out!
+
 			// origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
 			// stopLoc1 = $('.stop_location_1').val(); // Costco
 			// if ($('.stop_location_2').length) {
@@ -676,18 +660,6 @@ $(function() {
 			// 	stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
 			// };
 			// destination = $('.destination_address').val(); // 633 Folsom St San Francisco, CA
-
-			// var origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
-			// var stopLoc1 = $('.stop_location_1').val(); // Costco
-			// var stopLoc2 = null;
-			// if ($('.stop_location_2').length) {
-			// 	stopLoc2 = $('.stop_location_2').val(); // CVS
-			// };
-			// var stopLoc3 = null;
-			// if ($('.stop_location_3').length) {
-			// 	stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
-			// };
-			// var destination = $('.destination_address').val(); // 633 Folsom St San Francisco, CA
 
 			// var origin = "1982 Rockledge Rd Atlanta, GA";
 			// var stopLoc1 = "Wendy's";
@@ -834,7 +806,7 @@ $(function() {
 							// ...
 						};
 	      		  		var bestRouteBy = "time";
-	      		  		// compareStopOptions(combinations, origin, destination, bestRouteBy);
+	      		  		compareStopOptions(combinations, origin, destination, bestRouteBy);
 	      		  	});
 		        });
 			});
@@ -1067,6 +1039,28 @@ $(function() {
 	// 		});
 	// 	});
 	// });
+
+// ====================================================
+
+	// var paths = [[{X:10,Y:10},{X:110,Y:10},{X:110,Y:110},{X:10,Y:110}],
+	//              [{X:20,Y:20},{X:20,Y:100},{X:100,Y:100},{X:100,Y:20}]]; 
+	// var co1 = new ClipperLib.ClipperOffset(2, 0.25);
+	// co1.AddPaths(paths, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon);
+	// console.log(co1);
+
+	  // var polygons = [[{"X":72,"Y":39.55},{"X":136,"Y":66},{"X":170,"Y":99},{"X":171,"Y":114},{"X":183,"Y":125},{"X":218,"Y":165},{"X":254,"Y":195},{"X":283,"Y":195},{"X":292,"Y":202},{"X":325,"Y":213},{"X":397,"Y":245},{"X":417,"Y":248}]]; 
+	  // var scale = 100;
+	  // // reverse_copy(polygons);
+	  // polygons = scaleup(polygons, scale);
+	  // var cpr = new ClipperLib.Clipper();
+	  // var delta = 25;
+	  // var joinType = ClipperLib.JoinType.jtRound;
+	  // var miterLimit = 2;
+	  // var AutoFix = true;
+	  // var svg, offsetted_polygon;
+	  // // cont = document.getElementById('svgcontainer');
+	  // offsetted_polygon = cpr.OffsetPolygons(polygons, delta * scale, joinType, miterLimit, AutoFix);
+	  // console.log(offsetted_polygon);
 
 // var stopLoc = {location: new google.maps.LatLng(37.766280, -122.420961)};
 // var stopLoc2 = {location: "55 Brighton Ave San Francisco, CA 94112"};
