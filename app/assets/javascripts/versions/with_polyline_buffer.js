@@ -7,10 +7,8 @@ $(function() {
 	var boundsArr = [];
 
 	var directionsDisplay = new google.maps.DirectionsRenderer();
-	var geocoder = new google.maps.Geocoder();
-	var service;
-	var infoWindow;
-	var map;
+	// var geocoder = new google.maps.Geocoder();
+	var service, infoWindow, map;
 	var directionsService = new google.maps.DirectionsService();
 	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
 	var oneWayOrReturn = "on-my-way";
@@ -31,10 +29,14 @@ $(function() {
 		directionsDisplay.setMap(map);
 	};
 
+	google.maps.event.addDomListener(window, 'load', initialize);
+
+	// ====================================================
+
 	// ====================================================
 
 	var directionsCount = 0;
-	// get back directions from Google (promise)
+	// // get back directions from Google (promise)
 	var getDirections = function(requestParams) {
 		return new Promise(function(resolve, reject) {
 			directionsService.route(requestParams, function(response, status) {
@@ -60,10 +62,6 @@ $(function() {
 		// sampleDirectionsPromise.then(function(results) {
 		// 	console.log(results);
 		// });
-
-	// ====================================================
-
-	// ====================================================
 
 	// return options for each location (e.g. all Safeways within search area) (promise)
 	// figure out how to take care of the "reject" condition
@@ -147,43 +145,7 @@ $(function() {
 
 	// ====================================================
 
-	// geocoding function
-	var getGeo = function(address){
-	  return new Promise(function(resolve, reject) {
-	    geocoder.geocode({'address': address}, function(geo){
-	    	resolve(geo);
-	    });
-	  });
-	};
-
-	// ====================================================
-
-	// return all combinations of location1, location2, and location3
-	var allCombinationsThreeOptions = function(arr1, arr2, arr3) {
-		var possibilities = [];
-		var cur;
-		for (var i=0; i<arr1.length; i++) {
-			for (var j=0; j<arr2.length; j++) {
-				for (var k=0; k<arr3.length; k++) {
-					cur = [arr1[i], arr2[j], arr3[k]]
-					possibilities.push(cur);
-				};
-			};
-		};
-		return possibilities;
-	};
-
-	var allCombinationsTwoOptions = function(arr1, arr2) {
-		var possibilities = [];
-		var cur;
-		for (var i=0; i<arr1.length; i++) {
-			for (var j=0; j<arr2.length; j++) {
-				cur = [arr1[i], arr2[j]]
-				possibilities.push(cur);
-			};
-		};
-		return possibilities;
-	};
+	// FUNCTIONS RETURNING ALL COMBINATIONS MOVED TO allCombinations.js FILE
 
 	// ====================================================
 
@@ -270,33 +232,6 @@ $(function() {
 	};
 
 	// ====================================================
-
-	// For the "on-my-way" searches
-	function makeBounds(origin, destination) {
-		var offsetAmt = 0.010;
-		var north, south, east, west;
-		if (origin.G >= destination.G) {
-			north = origin.G;
-			south = destination.G;
-		} else if (origin.G < destination.G) {
-			north = destination.G;
-			south = origin.G;
-		}
-		if (origin.K >= destination.K) {
-			east = origin.K;
-			west = destination.K;
-		} else if (origin.K < destination.K) {
-			east = destination.K;
-			west = origin.K;
-		}
-		south = south - offsetAmt;
-		north = north + offsetAmt;
-		west = west - offsetAmt;
-		east = east + offsetAmt;
-		var swBounds = new google.maps.LatLng(south, west);
-		var neBounds = new google.maps.LatLng(north, east);
-		return [swBounds, neBounds];
-	};
 
 	// For the "out-and-back" searches
 	var offsetAmt = 0.050;
@@ -395,46 +330,10 @@ $(function() {
 		}
 
 		var myShape = new google.maps.Polygon({
-			paths: bufferCoords
-			// map: map
+			paths: bufferCoords,
+			map: map
 		});
 		return myShape;
-	};
-
-	// ====================================================
-
-	// Make sure that two locations of the same category (e.g. two given results from searching for "Costco" in a certain area) are not so close to each other such as to make it inefficient to consider the points as separate possibilities in the compareStopOptions function. Sometimes, each department of a big box store, for instance, "Costco Vision Center" and "Costco Tire Center", are considered as separate entities even though it's all the same Costco.
-
-	// compares each point to each other point in existing array
-	function notTooClose(point, arrOfPts) {
-		if (arrOfPts === []) {
-			return true;
-		}
-		var dist = 100; // 100 meters (arbitrarily small distance)
-		var farEnough = true; // "farEnough" is another way of saying "notTooClose" w/o same name as function
-		var pointLatLng = new google.maps.LatLng(point.geometry.location.G, point.geometry.location.K);
-
-		var ptInArrCoords; // get the {G: __, K: __} object first
-		var ptInArrLatLng; // then make a Gmaps LatLng object out of it
-		arrOfPts.forEach(function(ptInArr) {
-			ptInArrCoords = ptInArr.geometry.location
-			ptInArrLatLng = new google.maps.LatLng(ptInArrCoords.G, ptInArrCoords.K);
-			if (google.maps.geometry.spherical.computeDistanceBetween(ptInArrLatLng, pointLatLng) < dist) {
-				farEnough = false;
-			}
-		});
-		return farEnough;
-	};
-
-	// eliminates all overly close points for whole array of points
-	function cullNeighboringDuplicates(arrOfPts) {
-		var acceptedPts = [arrOfPts[0]]; // need first point as "starting point" for comparison of subsequent ones
-		arrOfPts.forEach(function(point) {
-			if (notTooClose(point, acceptedPts) === true) {
-				acceptedPts.push(point);
-			};
-		});
-		return acceptedPts;
 	};
 
 	// ====================================================
@@ -442,19 +341,6 @@ $(function() {
 	// ADD STOP FUNCTION IS IN ITS OWN JS FILE CALLED ADD_STOP.JS
 
 	// ====================================================
-
-	// From JS Fiddle for use with Clipper Library
-	// function scaleup(poly, scale) {
-	//   var i, j;
-	//   if (!scale) scale = 1;
-	//   for(i = 0; i < poly.length; i++) {
-	//     for(j = 0; j < poly[i].length; j++) {
-	//       poly[i][j].X *= scale;
-	//       poly[i][j].Y *= scale;
-	//     }
-	//   }
-	//   return poly;
-	// };
 
 	// ========= MAIN FUNCTION TO DEAL WITH USER CLICKING ENTER =========
 	$('.submit-search').on('click', function(e) {
@@ -774,7 +660,7 @@ $(function() {
 		};
 	});
 
-	google.maps.event.addDomListener(window, 'load', initialize);
+	// google.maps.event.addDomListener(window, 'load', initialize);
 });
 
 // ====================================================

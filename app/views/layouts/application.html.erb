@@ -8,17 +8,19 @@
   <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
   <%= csrf_meta_tags %>
 
-  <script src="assets/javascript.util.js"></script>
-  <script src="assets/jsts.js"></script>
-  <script src="assets/utm.js"></script>
+  <!-- data-main="scripts/main" -->
+  <script src="assets/require.js"></script>
+  <script src="assets/libraries/javascript.util.js"></script>
+  <script src="assets/libraries/jsts.js"></script>
+  <script src="assets/libraries/utm.js"></script>
 
   <!-- ArcGIS API for Javascript -->
-  <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
-  <script src="http://js.arcgis.com/3.14/"></script>
+  <!-- <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css"> -->
+  <!-- // <script src="http://js.arcgis.com/3.14/"></script> -->
 
   <!-- JS Clipper Library -->
   <!-- // <script src="clipper_unminified.js"></script> -->
-  <script src="assets/clipper_unminified_v502.js"></script>
+  <script src="assets/libraries/clipper_unminified_v502.js"></script>
   <!-- // <script src="../../assets/javascripts/clipper.js"></script> -->
 
   <!-- The below traceur scripts may or may not work -->
