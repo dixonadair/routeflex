@@ -2,16 +2,11 @@
 // IN PROGRESS: AFTER SEARCHING IN BOUNDS, CHECK TO SEE IF EACH SEARCH RESULT IS WITHIN THE POLYLINE BUFFER CREATED FROM THE DIRECT DIRECTIONS BETWEEN ORIGIN AND DESTINATION
 
 $(function() {
-
-	// var stopOptions = [];
-	var boundsArr = [];
-
 	var directionsDisplay = new google.maps.DirectionsRenderer();
-	// var geocoder = new google.maps.Geocoder();
-	var service, infoWindow, map;
 	var directionsService = new google.maps.DirectionsService();
-	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
+	var service, infoWindow, map;
 	var oneWayOrReturn = "on-my-way";
+	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
 
 	function initialize() {
 		// console.log("initialize function has run");
@@ -30,8 +25,6 @@ $(function() {
 	};
 
 	google.maps.event.addDomListener(window, 'load', initialize);
-
-	// ====================================================
 
 	// ====================================================
 
@@ -101,8 +94,6 @@ $(function() {
 		// 	});
 		// 	return promise.then(function(){ 45 }, function(){ debugger })
 		// };
-
-	// ====================================================
 
 	var getPlaceDetails = function(place) {
 		return new Promise(function(resolve, reject) {
