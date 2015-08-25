@@ -1,8 +1,9 @@
 // Deals with adding (and deleting (not yet implemented)) stops from user's route
 
 $(function() {
-	$('.add-stop').on('click', function(e) {
+	$('.fill-form').on('click', '.add-stop', function(e) {
 		e.preventDefault();
+		// console.log('add stop clicked');
 		if ($('.stop_location_3').length) {
 			// do nothing;
 			// console.log("no need to do anything");

@@ -5,8 +5,31 @@ $(function() {
 	var directionsDisplay = new google.maps.DirectionsRenderer();
 	var directionsService = new google.maps.DirectionsService();
 	var service, infoWindow, map;
-	var oneWayOrReturn = "on-my-way";
+
+	// ====================================================
+
 	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
+	var oneWayOrReturn;
+
+	var outBackForm = $("<input class='origin_address' class='search-ui' placeholder='Start/End Address'><input class='stop_location_1' class='search-ui' placeholder='Stop 1 (e.g. CVS)'><button class='add-stop'>Add stop</button><button class='submit-search'>Enter</button>");
+	var onWayForm = $("<input class='origin_address' class='search-ui' placeholder='Start Address'><input class='stop_location_1' class='search-ui' placeholder='Stop 1 (e.g. CVS)'><button class='add-stop'>Add stop</button><input class='destination_address' class='search-ui' placeholder='End Address'><button class='submit-search'>Enter</button>");
+
+	// ".empty()" + ".html(...)" way
+	$('.menu-ui a').on('click', function(e) {
+		e.preventDefault();
+		$(this).addClass('active').siblings().removeClass('active');
+		if ($(this).hasClass('out-and-back')) {
+			$('.fill-form').html(outBackForm);
+			oneWayOrReturn = "out-and-back";
+			console.log(oneWayOrReturn, "oneWayOrReturn");
+		} else if ($(this).hasClass('on-my-way')) {
+			$('.fill-form').html(onWayForm);
+			oneWayOrReturn = "on-my-way";
+			console.log(oneWayOrReturn, "oneWayOrReturn");
+		};
+	});
+
+	// ====================================================
 
 	function initialize() {
 		// console.log("initialize function has run");
@@ -184,19 +207,11 @@ $(function() {
 				  				if (tripDistance < bestDistance) {
 				  					bestDistance = tripDistance;
 				  					bestResponse = response;
-				  					// bestWaypts = waypts;
-				  					optionsArr[i].forEach(function(waypt) {
-				  						// getWayptDets(waypt);
-				  					});
 				  				};
 				  			} else {
 				  				if (tripDuration < bestTime) {
 				  					bestTime = tripDuration;
 				  					bestResponse = response;
-				  					// bestWaypts = waypts;
-				  					optionsArr[i].forEach(function(waypt) {
-				  						// getWayptDets(waypt);
-				  					});
 				  				};
 				  			}
 				  			directionsDisplay.setDirections(bestResponse);
@@ -223,6 +238,41 @@ $(function() {
 	};
 
 	// ====================================================
+
+	// For the "on-my-way" searches
+	function showBoundsArea(origin, destination) {
+		var offsetAmt = 0.025;
+		var north, south, east, west;
+		if (origin.G >= destination.G) {
+			north = origin.G;
+			south = destination.G;
+		} else if (origin.G < destination.G) {
+			north = destination.G;
+			south = origin.G;
+		}
+		if (origin.K >= destination.K) {
+			east = origin.K;
+			west = destination.K;
+		} else if (origin.K < destination.K) {
+			east = destination.K;
+			west = origin.K;
+		}
+		south = south - offsetAmt;
+		north = north + offsetAmt;
+		west = west - offsetAmt;
+		east = east + offsetAmt;
+
+		var boundCoords = [
+			new google.maps.LatLng(north, west),
+			new google.maps.LatLng(north, east),
+			new google.maps.LatLng(south, east),
+			new google.maps.LatLng(south, west)
+		];
+		var boundShape = new google.maps.Polygon({
+			paths: boundCoords,
+			map: map
+		});
+	};
 
 	// For the "out-and-back" searches
 	var offsetAmt = 0.050;
@@ -321,8 +371,8 @@ $(function() {
 		}
 
 		var myShape = new google.maps.Polygon({
-			paths: bufferCoords,
-			map: map
+			paths: bufferCoords
+			// map: map
 		});
 		return myShape;
 	};
@@ -333,33 +383,33 @@ $(function() {
 
 	// ====================================================
 
+	// var origin = "633 Folsom St San Francisco, CA";
+	// var stopLoc1 = "gas station";
+	// var stopLoc2 = "Trader Joe's";
+	// var stopLoc3 = "Walgreens";
+	// var destination = origin;
+
+	// ====================================================
+
 	// ========= MAIN FUNCTION TO DEAL WITH USER CLICKING ENTER =========
-	$('.submit-search').on('click', function(e) {
+	$('.fill-form').on('click', '.submit-search', function(e) {
 		e.preventDefault();
-		console.log(oneWayOrReturn);
+		// console.log(oneWayOrReturn);
 
 		var origin, stopLoc1, stopLoc2, stopLoc3, destination = null; // Don't Comment out!
 		var bestRouteBy = "time"; // "distance" or "time"
 
 		if (oneWayOrReturn === "out-and-back") {
 
-			var origin = "633 Folsom St San Francisco, CA";
-			var stopLoc1 = "Costco";
-			var stopLoc2 = "Trader Joe's";
-			var stopLoc3 = "Walgreens";
-			var destination = origin;
-
-			// origin = $('.origin_address').val(); // 55 Brighton Ave San Francisco, CA
-			// stopLoc1 = $('.stop_location_1').val(); // Costco
-			// if ($('.stop_location_2').length) {
-			// 	console.log("stopLoc2 is here");
-			// 	stopLoc2 = $('.stop_location_2').val(); // CVS
-			// };
-			// if ($('.stop_location_3').length) {
-			// 	console.log("stopLoc3 is here");
-			// 	stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
-			// };
-			// destination = origin;
+			origin = $('.origin_address').val(); // 55 Brighton Ave San Francisco, CA
+			stopLoc1 = $('.stop_location_1').val(); // Costco
+			if ($('.stop_location_2').length) {
+				stopLoc2 = $('.stop_location_2').val(); // CVS
+			};
+			if ($('.stop_location_3').length) {
+				stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
+			};
+			destination = origin;
 
 			var numStops;
 			if (stopLoc3 !== null && stopLoc3 !== undefined) {
@@ -369,8 +419,6 @@ $(function() {
 			} else {
 				numStops = 1;
 			};
-
-			console.log(numStops, "numStops");
 
 			var originGeo = getGeo(origin);
 			originGeo.then(function(results) {
@@ -395,7 +443,7 @@ $(function() {
 					searchParams2 = {
 						location: searchAroundHere,
 						radius: setRadius,
-						name: stopLoc2
+						keyword: stopLoc2
 					};
 					stop2Options = performNearbySearch(searchParams2);
 				};
@@ -403,34 +451,10 @@ $(function() {
 					searchParams3 = {
 						location: searchAroundHere,
 						radius: setRadius,
-						name: stopLoc3
+						keyword: stopLoc3
 					};
 					stop3Options = performNearbySearch(searchParams3);
 				};
-
-				// -------- With radarSearch --------
-
-					// var bounds = makeBoundsAroundLocation(searchAroundHere);
-					// searchParams1 = {
-					// 	bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-					// 	name: stopLoc1
-					// };
-					// stop1Options = performSearch(searchParams1);
-					// if (numStops >= 2) {
-					// 	searchParams2 = {
-					// 		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-					// 		name: stopLoc2
-					// 	};
-					// 	stop2Options = performSearch(searchParams2);
-					// };
-					// if (numStops >= 3) {
-					// 	searchParams3 = {
-					// 		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-					// 		name: stopLoc3
-					// 	};
-					// 	stop3Options = performSearch(searchParams3);
-					// };
-					// showBoundsAroundLocation(searchAroundHere);
 
 				// ----------------------------------
 
@@ -473,15 +497,13 @@ $(function() {
 						});
 					});
 
-					// console.log(newResults, "newResults");
-
 					var combinations;
 					if (numStops === 3) {
 						combinations = allCombinationsThreeOptions(newResults[0], newResults[1], newResults[2]);
 					} else if (numStops === 2) {
 						combinations = allCombinationsTwoOptions(newResults[0], newResults[1]);
 					} else if (numStops === 1) {
-						// ...
+						combinations = allCombinationsOneOption(newResults[0]);
 					};
       		  		console.log(combinations, "combinations");
 
@@ -490,15 +512,15 @@ $(function() {
 			});
 		} else if (oneWayOrReturn === "on-my-way") {
 
-			// origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
-			// stopLoc1 = $('.stop_location_1').val(); // Costco
-			// if ($('.stop_location_2').length) {
-			// 	stopLoc2 = $('.stop_location_2').val(); // CVS
-			// };
-			// if ($('.stop_location_3').length) {
-			// 	stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
-			// };
-			// destination = $('.destination_address').val(); // 633 Folsom St San Francisco, CA
+			origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
+			stopLoc1 = $('.stop_location_1').val(); // Costco
+			if ($('.stop_location_2').length) {
+				stopLoc2 = $('.stop_location_2').val(); // CVS
+			};
+			if ($('.stop_location_3').length) {
+				stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
+			};
+			destination = $('.destination_address').val(); // 633 Folsom St San Francisco, CA
 
 			// var origin = "1982 Rockledge Rd Atlanta, GA";
 			// var stopLoc1 = "Wendy's";
@@ -506,11 +528,11 @@ $(function() {
 			// var stopLoc3 = "Publix";
 			// var destination = "701 Chase Ln Norcross, GA";
 
-			var origin = "633 Folsom St San Francisco, CA";
-			var stopLoc1 = "Trader Joe's";
-			var stopLoc2 = "Walgreens";
-			var stopLoc3 = "Costco";
-			var destination = "55 Brighton Ave San Francisco, CA";
+			// var origin = "633 Folsom St San Francisco, CA";
+			// var stopLoc1 = "Trader Joe's";
+			// var stopLoc2 = "gas station";
+			// var stopLoc3 = "Costco";
+			// var destination = "55 Brighton Ave San Francisco, CA";
 
 			var numStops;
 			if (stopLoc3 !== null && stopLoc3 !== undefined) {
@@ -526,41 +548,29 @@ $(function() {
 
 			// -----------------------------------
 
-				// var triangleCoords = [
-				//   new google.maps.LatLng(25.774252, -80.190262),
-				//   new google.maps.LatLng(18.466465, -66.118292),
-				//   new google.maps.LatLng(32.321384, -64.75737)
-				// ];
-
-				// var bermudaTriangle = new google.maps.Polygon({
-				//   paths: triangleCoords,
-				//   map: map
-				// });
-
-			// -----------------------------------
-
 			Promise.all([p1, p2]).then(function(results) {
 			    var p1result = results[0][0].geometry.location;
 			    var p2result = results[1][0].geometry.location;
 
 			    // set up rectangular search bounds
 			    var bounds = makeBounds(p1result, p2result);
+			    // showBoundsArea(p1result, p2result);
 
 			    // search request params for each stop entry
 			    var searchRequestParams1 = {
 			    	bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-			    	name: stopLoc1
+			    	keyword: stopLoc1
 			    };
 			    if (numStops >= 2) {
 			    	var searchRequestParams2 = {
 			    		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-			    		name: stopLoc2
+			    		keyword: stopLoc2
 			    	};
 			    };
 			    if (numStops >= 3) {
 			    	var searchRequestParams3 = {
 			    		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-			    		name: stopLoc3
+			    		keyword: stopLoc3
 			    	};
 			    };
 
@@ -607,14 +617,6 @@ $(function() {
 	      		  		};
 	      		  		// var stopLocNameArr = [stopLoc1, stopLoc2, stopLoc3];
 
-	      		  		// ------------------------------------------
-		      		  		// // Put each place marker on map, regardless
-		      		  		// results.forEach(function(results) {
-		      		  		// 	results.forEach(function(place) {
-		      		  		// 		createMarker(place); // UNCOMMENT!
-		      		  		// 	});
-		      		  		// });
-
 	      		  		// Put each place marker on map if inside polyline buffer, and remove options not inside polyline buffer or those that are too close to one another
 	      		  		var newResults;
 	      		  		if (numStops === 3) {
@@ -636,13 +638,15 @@ $(function() {
 	      		  			});
 	      		  		});
 
+	      		  		console.log(newResults);
+
 						var combinations;
 						if (numStops === 3) {
 							combinations = allCombinationsThreeOptions(newResults[0], newResults[1], newResults[2]);
 						} else if (numStops === 2) {
 							combinations = allCombinationsTwoOptions(newResults[0], newResults[1]);
 						} else if (numStops === 1) {
-							// ...
+							combinations = allCombinationsOneOption(newResults[0]);
 						};
 	      		  		compareStopOptions(combinations, origin, destination, bestRouteBy);
 	      		  	});
@@ -651,7 +655,6 @@ $(function() {
 		};
 	});
 
-	// google.maps.event.addDomListener(window, 'load', initialize);
 });
 
 // ====================================================
@@ -899,6 +902,38 @@ $(function() {
 	  // // cont = document.getElementById('svgcontainer');
 	  // offsetted_polygon = cpr.OffsetPolygons(polygons, delta * scale, joinType, miterLimit, AutoFix);
 	  // console.log(offsetted_polygon);
+
+// -------- With radarSearch --------
+
+  	// var bounds = makeBoundsAroundLocation(searchAroundHere);
+  	// searchParams1 = {
+  	// 	bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
+  	// 	name: stopLoc1
+  	// };
+  	// stop1Options = performSearch(searchParams1);
+  	// if (numStops >= 2) {
+  	// 	searchParams2 = {
+  	// 		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
+  	// 		name: stopLoc2
+  	// 	};
+  	// 	stop2Options = performSearch(searchParams2);
+  	// };
+  	// if (numStops >= 3) {
+  	// 	searchParams3 = {
+  	// 		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
+  	// 		name: stopLoc3
+  	// 	};
+  	// 	stop3Options = performSearch(searchParams3);
+  	// };
+  	// showBoundsAroundLocation(searchAroundHere);
+
+// ------------------------------------------
+	// // Put each place marker on map, regardless
+	// results.forEach(function(results) {
+	// 	results.forEach(function(place) {
+	// 		createMarker(place); // UNCOMMENT!
+	// 	});
+	// });
 
 // var stopLoc = {location: new google.maps.LatLng(37.766280, -122.420961)};
 // var stopLoc2 = {location: "55 Brighton Ave San Francisco, CA 94112"};

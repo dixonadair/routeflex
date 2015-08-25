@@ -1,6 +1,6 @@
 // For the "on-my-way" searches
 function makeBounds(origin, destination) {
-	var offsetAmt = 0.010;
+	var offsetAmt = 0.025;
 	var north, south, east, west;
 	if (origin.G >= destination.G) {
 		north = origin.G;

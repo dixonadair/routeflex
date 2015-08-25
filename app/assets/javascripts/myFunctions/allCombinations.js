@@ -24,3 +24,11 @@ var allCombinationsTwoOptions = function(arr1, arr2) {
 	};
 	return possibilities;
 };
+
+var allCombinationsOneOption = function(arr) {
+	var possibilities = [];
+	for (var i=0; i<arr.length; i++) {
+		possibilities.push([arr[i]]);
+	};
+	return possibilities;
+};
