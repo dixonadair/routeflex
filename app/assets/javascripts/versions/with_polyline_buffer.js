@@ -2,9 +2,6 @@
 // IN PROGRESS: AFTER SEARCHING IN BOUNDS, CHECK TO SEE IF EACH SEARCH RESULT IS WITHIN THE POLYLINE BUFFER CREATED FROM THE DIRECT DIRECTIONS BETWEEN ORIGIN AND DESTINATION
 
 $(function() {
-	var directionsDisplay = new google.maps.DirectionsRenderer();
-	var directionsService = new google.maps.DirectionsService();
-	var service, infoWindow, map;
 
 	// ====================================================
 
@@ -31,23 +28,60 @@ $(function() {
 
 	// ====================================================
 
-	function initialize() {
-		// console.log("initialize function has run");
-		// directionsDisplay = new google.maps.DirectionsRenderer();
-		var centerSF = new google.maps.LatLng(37.766280, -122.420961);
-		var centerATL = new google.maps.LatLng(33.8, -84.3);
-		var myLatlng = centerSF;
-		var mapOptions = {
-	    	zoom: 11,
-	    	center: myLatlng
-		}
-		map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-		infoWindow = new google.maps.InfoWindow();
-		service = new google.maps.places.PlacesService(map);
-		directionsDisplay.setMap(map);
+		// function initialize() {
+		// 	// console.log("initialize function has run");
+		// 	// directionsDisplay = new google.maps.DirectionsRenderer();
+		// 	var centerSF = new google.maps.LatLng(37.766280, -122.420961);
+		// 	var centerATL = new google.maps.LatLng(33.8, -84.3);
+		// 	var myLatlng = centerSF;
+		// 	var mapOptions = {
+		//     	zoom: 11,
+		//     	center: myLatlng
+		// 	}
+		// 	map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+		// 	infoWindow = new google.maps.InfoWindow();
+		// 	service = new google.maps.places.PlacesService(map);
+		// 	directionsDisplay.setMap(map);
+		// };
+
+		// google.maps.event.addDomListener(window, 'load', initialize);
+
+	// ====================================================
+
+	var directionsDisplay = new google.maps.DirectionsRenderer();
+	var directionsService = new google.maps.DirectionsService();
+	var service, infoWindow, map;
+
+	function getGeolocation() {
+		return new Promise(function(resolve, reject) {
+			navigator.geolocation.getCurrentPosition(function(position) {
+				resolve(position);
+			});
+		});
 	};
 
-	google.maps.event.addDomListener(window, 'load', initialize);
+	var centerSF = new google.maps.LatLng(37.766280, -122.420961);
+	var centerATL = new google.maps.LatLng(33.8, -84.3);
+	var mapOptions = {
+    	zoom: 11,
+    	mapTypeId: google.maps.MapTypeId.ROADMAP
+	}
+	map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+	infoWindow = new google.maps.InfoWindow();
+	service = new google.maps.places.PlacesService(map);
+	directionsDisplay.setMap(map);
+
+	// Geolocation
+	var compGeolocation, mapCenter;
+	if (!!navigator.geolocation) {
+		compGeolocation = getGeolocation()
+		compGeolocation.then(function(position) {
+			mapCenter = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+			map.setCenter(mapCenter);
+		});
+	} else {
+		console.log('Geolocation not available');
+	};
 
 	// ====================================================
 
@@ -68,17 +102,6 @@ $(function() {
 
 	// ====================================================
 
-		// var sampleRequest = {
-	 //        origin: "343 Vernon St San Francisco, CA",
-	 //        destination: "633 Folsom St San Francisco, CA",
-	 //        travelMode: google.maps.TravelMode.DRIVING
-		// };
-
-		// var sampleDirectionsPromise = getDirections(sampleRequest);
-		// sampleDirectionsPromise.then(function(results) {
-		// 	console.log(results);
-		// });
-
 	// return options for each location (e.g. all Safeways within search area) (promise)
 	// figure out how to take care of the "reject" condition
 	var performSearch = function(requestParams) {
@@ -97,26 +120,6 @@ $(function() {
 			});
 		});
 	};
-
-	// ====================================================
-		// --- Jared Debugging ---
-
-		// var WTF_IS_HAPPENING={}
-
-		// // (promise) (get place details, such as name)
-		// var getPlaceDetails = function(place) {
-		// 	var promise = new Promise(function(resolve, reject) {
-		// 		var UUID = Math.random().toString().slice(2,8)
-
-		// 		service.getDetails(place, function(result, status) {
-		// 			if (UUID in WTF_IS_HAPPENING){ debugger }
-		// 			WTF_IS_HAPPENING[UUID] = {place:place, result:result}
-		// 			console.log(WTF_IS_HAPPENING)
-		// 			resolve(result);
-		// 		});
-		// 	});
-		// 	return promise.then(function(){ 45 }, function(){ debugger })
-		// };
 
 	var getPlaceDetails = function(place) {
 		return new Promise(function(resolve, reject) {
