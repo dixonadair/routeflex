@@ -5,24 +5,38 @@ $(function() {
 
 	// ====================================================
 
+	var autocomplete, autocompleteOrigin, autocompleteDestination;
+
 	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
 	var oneWayOrReturn;
+	var outBackForm = $("<br><label for=''>Start and End Address:</label><input type='text' class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><button class='submit-search btn btn-info'>Submit Search</button>");
+	var onWayForm = $("<br><label for=''>Start Address:</label><input class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'><br><button class='submit-search btn btn-info'>Submit Search</button>");
 
-	var outBackForm = $("<input class='origin_address' class='search-ui' placeholder='Start/End Address'><input class='stop_location_1' class='search-ui' placeholder='Stop 1 (e.g. CVS)'><button class='add-stop'>Add stop</button><button class='submit-search'>Enter</button>");
-	var onWayForm = $("<input class='origin_address' class='search-ui' placeholder='Start Address'><input class='stop_location_1' class='search-ui' placeholder='Stop 1 (e.g. CVS)'><button class='add-stop'>Add stop</button><input class='destination_address' class='search-ui' placeholder='End Address'><button class='submit-search'>Enter</button>");
+	// $('.out-and-back').on('click', function(e) {
+	// 	e.preventDefault();
+	// 	console.log(e);
+	// });
 
-	// ".empty()" + ".html(...)" way
-	$('.menu-ui a').on('click', function(e) {
+	// $('.out-and-back').on('click', function(e) {
+	// 	e.preventDefault();
+	// 	console.log(e);
+	// });
+
+	$('.main-nav li').on('click', function(e) {
 		e.preventDefault();
+		console.log("main-nav li clicked");
+		console.log($(this).target, "this.target");
+		// autocomplete = new google.maps.places.Autocomplete($('.autocomplete'));
 		$(this).addClass('active').siblings().removeClass('active');
 		if ($(this).hasClass('out-and-back')) {
 			$('.fill-form').html(outBackForm);
+			autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
 			oneWayOrReturn = "out-and-back";
-			console.log(oneWayOrReturn, "oneWayOrReturn");
 		} else if ($(this).hasClass('on-my-way')) {
 			$('.fill-form').html(onWayForm);
+			autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+			autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
 			oneWayOrReturn = "on-my-way";
-			console.log(oneWayOrReturn, "oneWayOrReturn");
 		};
 	});
 

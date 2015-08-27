@@ -8,10 +8,10 @@ $(function() {
 			// do nothing;
 			// console.log("no need to do anything");
 		} else if ($('.stop_location_2').length) {
-			$("<input class='stop_location_3' class='search-ui' placeholder='Stop 3 (e.g. Costco)'>").insertAfter('.stop_location_2');
+			$("<br><label for=''>Stop 3:</label><input class='stop_location_3 form-control' class='search-ui' placeholder='(e.g. Costco)'>").insertAfter('.stop_location_2');
 			$('.add-stop').remove();
 		} else {
-			$("<input class='stop_location_2' class='search-ui' placeholder='Stop 2 (e.g. Trader Joe's)'>").insertAfter('.stop_location_1');
+			$("<br><label for=''>Stop 2:</label><input class='stop_location_2 form-control' class='search-ui' placeholder='(e.g. Trader Joes)'>").insertAfter('.stop_location_1');
 		};
 	});
 });
