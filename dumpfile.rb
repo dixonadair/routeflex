@@ -29,6 +29,14 @@ var destination = "633 Folsom St San Francisco, CA";
 <!-- <%= render partial: "map" %> -->
 
 # =======================================
+
+# 343 Vernon St San Francisco, CA
+# 633 Folsom St San Francisco, CA
+# 179 Julian Ave San Francisco, CA
+# 450 10th St San Francisco, CA
+# 55 Brighton Ave San Francisco, CA
+# 1035 Sutter St San Francisco, CA
+
 # =======================================
 # =======================================
 # =======================================

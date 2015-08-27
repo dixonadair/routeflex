@@ -5,46 +5,45 @@ $(function() {
 
 	// ====================================================
 
+	// Out-and-back vs On-my-way searches
 	var autocomplete, autocompleteOrigin, autocompleteDestination;
 
 	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
 	var oneWayOrReturn;
-	var outBackForm = $("<br><label for=''>Start and End Address:</label><input type='text' class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><button class='submit-search btn btn-info'>Submit Search</button>");
-	var onWayForm = $("<br><label for=''>Start Address:</label><input class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'><br><button class='submit-search btn btn-info vac'>Submit Search</button>");
+	var outBackForm = $("<br><label class='start-address-label' for=''>Start and End Address:</label><input type='text' class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control stop' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><button class='submit-search btn btn-info'>Submit Search</button>");
+	var onWayForm = $("<br><label for=''>Start Address:</label><input class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control stop' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'><br><button class='submit-search btn btn-info vac'>Submit Search</button>");
+	var destinationField = $("<label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'><br>");
 
-	$('.out-and-back a').on('click', function(e) {
-		e.preventDefault();
-		console.log("out-and-back clicked");
-		$('.fill-form').html(outBackForm);
-		autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
-		oneWayOrReturn = "out-and-back";
+	$('.roundtrip').on('click', function(e) {
+		// e.preventDefault();
+		var on = e.target.checked;
+		console.log(on);
+		if (on === true) {
+			oneWayOrReturn = "out-and-back";
+			$('.start-address-label').text("Start and End Address");
+			$('.end-address').empty();
+		} else {
+			oneWayOrReturn = "on-my-way";
+			$('.start-address-label').text("Start Address");
+			$('.end-address').html(destinationField);
+		};
 	});
 
-	$('.on-my-way a').on('click', function(e) {
-		e.preventDefault();
-		console.log("out-and-back clicked");
-		$('.fill-form').html(onWayForm);
-		autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
-		autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
-		oneWayOrReturn = "on-my-way";
-	});
-
-	// $('.main-nav li').on('click', function(e) {
+	// $('.out-and-back a').on('click', function(e) {
 	// 	e.preventDefault();
-	// 	console.log("main-nav li clicked");
-	// 	console.log($(this).target, "this.target");
-	// 	// autocomplete = new google.maps.places.Autocomplete($('.autocomplete'));
-	// 	$(this).addClass('active').siblings().removeClass('active');
-	// 	if ($(this).hasClass('out-and-back')) {
-	// 		$('.fill-form').html(outBackForm);
-	// 		autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
-	// 		oneWayOrReturn = "out-and-back";
-	// 	} else if ($(this).hasClass('on-my-way')) {
-	// 		$('.fill-form').html(onWayForm);
-	// 		autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
-	// 		autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
-	// 		oneWayOrReturn = "on-my-way";
-	// 	};
+	// 	console.log("out-and-back clicked");
+	// 	$('.fill-form').html(outBackForm);
+	// 	autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+	// 	oneWayOrReturn = "out-and-back";
+	// });
+
+	// $('.on-my-way a').on('click', function(e) {
+	// 	e.preventDefault();
+	// 	console.log("out-and-back clicked");
+	// 	$('.fill-form').html(onWayForm);
+	// 	autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+	// 	autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
+	// 	oneWayOrReturn = "on-my-way";
 	// });
 
 	// ====================================================
@@ -69,6 +68,22 @@ $(function() {
 
 	// ====================================================
 
+	var bestRouteBy;
+
+	$('.by-time a').on('click', function(e) {
+		e.preventDefault();
+		console.log("optimize by time");
+		bestRouteBy = "time";
+	});
+	$('.by-distance a').on('click', function(e) {
+		e.preventDefault();
+		console.log("optimize by distance");
+		bestRouteBy = "distance";
+	});
+
+	// ====================================================
+
+	// Set up map
 	var directionsDisplay = new google.maps.DirectionsRenderer();
 	var directionsService = new google.maps.DirectionsService();
 	var service, infoWindow, map;
@@ -927,6 +942,25 @@ $(function() {
 	  // offsetted_polygon = cpr.OffsetPolygons(polygons, delta * scale, joinType, miterLimit, AutoFix);
 	  // console.log(offsetted_polygon);
 
+// ====================================================
+	// $('.main-nav li').on('click', function(e) {
+	// 	e.preventDefault();
+	// 	console.log("main-nav li clicked");
+	// 	console.log($(this).target, "this.target");
+	// 	// autocomplete = new google.maps.places.Autocomplete($('.autocomplete'));
+	// 	$(this).addClass('active').siblings().removeClass('active');
+	// 	if ($(this).hasClass('out-and-back')) {
+	// 		$('.fill-form').html(outBackForm);
+	// 		autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+	// 		oneWayOrReturn = "out-and-back";
+	// 	} else if ($(this).hasClass('on-my-way')) {
+	// 		$('.fill-form').html(onWayForm);
+	// 		autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+	// 		autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
+	// 		oneWayOrReturn = "on-my-way";
+	// 	};
+	// });
+
 // -------- With radarSearch --------
 
   	// var bounds = makeBoundsAroundLocation(searchAroundHere);
@@ -961,3 +995,12 @@ $(function() {
 
 // var stopLoc = {location: new google.maps.LatLng(37.766280, -122.420961)};
 // var stopLoc2 = {location: "55 Brighton Ave San Francisco, CA 94112"};
+
+// ====================================================
+// ====================================================
+// ====================================================
+// ====================================================
+// ====================================================
+// ====================================================
+// ====================================================
+// ====================================================
