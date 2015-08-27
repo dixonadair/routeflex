@@ -12,23 +12,40 @@ $(function() {
 	var outBackForm = $("<br><label for=''>Start and End Address:</label><input type='text' class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><button class='submit-search btn btn-info'>Submit Search</button>");
 	var onWayForm = $("<br><label for=''>Start Address:</label><input class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'><br><button class='submit-search btn btn-info vac'>Submit Search</button>");
 
-	$('.main-nav li').on('click', function(e) {
+	$('.out-and-back a').on('click', function(e) {
 		e.preventDefault();
-		console.log("main-nav li clicked");
-		console.log($(this).target, "this.target");
-		// autocomplete = new google.maps.places.Autocomplete($('.autocomplete'));
-		$(this).addClass('active').siblings().removeClass('active');
-		if ($(this).hasClass('out-and-back')) {
-			$('.fill-form').html(outBackForm);
-			autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
-			oneWayOrReturn = "out-and-back";
-		} else if ($(this).hasClass('on-my-way')) {
-			$('.fill-form').html(onWayForm);
-			autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
-			autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
-			oneWayOrReturn = "on-my-way";
-		};
+		console.log("out-and-back clicked");
+		$('.fill-form').html(outBackForm);
+		autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+		oneWayOrReturn = "out-and-back";
 	});
+
+	$('.on-my-way a').on('click', function(e) {
+		e.preventDefault();
+		console.log("out-and-back clicked");
+		$('.fill-form').html(onWayForm);
+		autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+		autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
+		oneWayOrReturn = "on-my-way";
+	});
+
+	// $('.main-nav li').on('click', function(e) {
+	// 	e.preventDefault();
+	// 	console.log("main-nav li clicked");
+	// 	console.log($(this).target, "this.target");
+	// 	// autocomplete = new google.maps.places.Autocomplete($('.autocomplete'));
+	// 	$(this).addClass('active').siblings().removeClass('active');
+	// 	if ($(this).hasClass('out-and-back')) {
+	// 		$('.fill-form').html(outBackForm);
+	// 		autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+	// 		oneWayOrReturn = "out-and-back";
+	// 	} else if ($(this).hasClass('on-my-way')) {
+	// 		$('.fill-form').html(onWayForm);
+	// 		autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+	// 		autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
+	// 		oneWayOrReturn = "on-my-way";
+	// 	};
+	// });
 
 	// ====================================================
 
