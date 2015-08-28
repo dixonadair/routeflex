@@ -1,7 +1,7 @@
 <%= render partial: "map" %>
 
 <!-- visitor counter -->
-<div align=right><a href='http://www.counter12.com'><img src='http://www.counter12.com/img-wB4DZZ60-5.gif' border='0' alt='free counter'></a><script type='text/javascript' src='http://www.counter12.com/ad.js?id=wB4DZZ60'></script></div>
+<!-- <div align=right><a href='http://www.counter12.com'><img src='http://www.counter12.com/img-wB4DZZ60-5.gif' border='0' alt='free counter'></a><script type='text/javascript' src='http://www.counter12.com/ad.js?id=wB4DZZ60'></script></div> -->
 
 <div class="form">
 
@@ -17,6 +17,10 @@
 		</ul>
 	</nav>
 
+	<!-- "Form Information Missing!" warning inserted inside this div if applicable -->
+	<div class="missing-warning">
+	</div>
+
 	<input type="checkbox" name="roundtrip" class="roundtrip" value="roundtrip"> Roundtrip<br>
 	
 <!-- 	<nav class="main-nav">
@@ -26,7 +30,9 @@
 		</ul>
 	</nav> -->
 
-	<div class="fill-form">
+	<!-- With "Stop 1, Stop 2, Stop3,..." format -->
+
+<!-- 	<div class="fill-form">
 		<br>
 		<label class='start-address-label' for=''>Start Address:</label>
 		<input type='text' class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'>
@@ -35,6 +41,20 @@
 		<input class='stop_location_1 form-control' placeholder='(e.g. CVS)'>
 		<button class='add-stop btn btn-info'>Add stop</button>
 		<br><br>
+		<div class="end-address"><label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'></div>
+		<button class='submit-search btn btn-info'>Submit Search</button>
+	</div> -->
+
+	<!-- With comma-separated stops format -->
+
+	<div class="fill-form">
+		<br>
+		<label class='start-address-label' for=''>Start Address:</label>
+		<input type='text' class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'>
+		<br>
+		<label for=''>Enter up to 3 stops, separated by commas</label>
+		<input class='stops form-control' placeholder="e.g. 'CVS, Target, Costco' or 'CVS'">
+		<br>
 		<div class="end-address"><label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'></div>
 		<button class='submit-search btn btn-info'>Submit Search</button>
 	</div>

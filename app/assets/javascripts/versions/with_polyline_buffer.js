@@ -9,9 +9,7 @@ $(function() {
 	var autocomplete, autocompleteOrigin, autocompleteDestination;
 
 	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
-	var oneWayOrReturn;
-	var outBackForm = $("<br><label class='start-address-label' for=''>Start and End Address:</label><input type='text' class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control stop' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><button class='submit-search btn btn-info'>Submit Search</button>");
-	var onWayForm = $("<br><label for=''>Start Address:</label><input class='origin_address form-control autocomplete' placeholder='10 Main St Anytown CA'><br><label for=''>Stop 1:</label><input class='stop_location_1 form-control stop' placeholder='(e.g. CVS)'><button class='add-stop btn btn-info'>Add stop</button><br><br><label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'><br><button class='submit-search btn btn-info vac'>Submit Search</button>");
+	var oneWayOrReturn = "on-my-way";
 	var destinationField = $("<label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'><br>");
 
 	$('.roundtrip').on('click', function(e) {
@@ -29,47 +27,9 @@ $(function() {
 		};
 	});
 
-	// $('.out-and-back a').on('click', function(e) {
-	// 	e.preventDefault();
-	// 	console.log("out-and-back clicked");
-	// 	$('.fill-form').html(outBackForm);
-	// 	autocomplete = new google.maps.places.Autocomplete($('.autocomplete')[0]);
-	// 	oneWayOrReturn = "out-and-back";
-	// });
-
-	// $('.on-my-way a').on('click', function(e) {
-	// 	e.preventDefault();
-	// 	console.log("out-and-back clicked");
-	// 	$('.fill-form').html(onWayForm);
-	// 	autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
-	// 	autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
-	// 	oneWayOrReturn = "on-my-way";
-	// });
-
 	// ====================================================
 
-		// function initialize() {
-		// 	// console.log("initialize function has run");
-		// 	// directionsDisplay = new google.maps.DirectionsRenderer();
-		// 	var centerSF = new google.maps.LatLng(37.766280, -122.420961);
-		// 	var centerATL = new google.maps.LatLng(33.8, -84.3);
-		// 	var myLatlng = centerSF;
-		// 	var mapOptions = {
-		//     	zoom: 11,
-		//     	center: myLatlng
-		// 	}
-		// 	map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-		// 	infoWindow = new google.maps.InfoWindow();
-		// 	service = new google.maps.places.PlacesService(map);
-		// 	directionsDisplay.setMap(map);
-		// };
-
-		// google.maps.event.addDomListener(window, 'load', initialize);
-
-	// ====================================================
-
-	var bestRouteBy;
-
+	var bestRouteBy = "time";
 	$('.by-time a').on('click', function(e) {
 		e.preventDefault();
 		console.log("optimize by time");
@@ -433,32 +393,46 @@ $(function() {
 	// ========= MAIN FUNCTION TO DEAL WITH USER CLICKING ENTER =========
 	$('.fill-form').on('click', '.submit-search', function(e) {
 		e.preventDefault();
-		// console.log(oneWayOrReturn);
+		console.log("search submitted");
 
-		var origin, stopLoc1, stopLoc2, stopLoc3, destination = null; // Don't Comment out!
-		var bestRouteBy = "time"; // "distance" or "time"
+		var origin, stops, stopLoc1, stopLoc2, stopLoc3, destination = null; // Don't Comment out!
+		stops = $('.stops').val();
+		var numCommas = (stops.match(/,/g) || []).length;
+		origin = $('.origin_address').val();
+
+		if (oneWayOrReturn === "on-my-way") {
+			destination = $('.destination_address').val();
+		} else if (oneWayOrReturn === "out-and-back") {
+			destination = origin;
+		}
+
+		// Display warning if form info missing, get rid of warning once form info filled in
+		if ( origin === "" || stops === "" || (oneWayOrReturn === "on-my-way" && destination === "") ) {
+			$('.missing-warning').html("<div class='alert alert-danger'>Form Information Missing!</div>");
+		} else {
+			if ( $('.missing-warning').html() !== null || $('.missing-warning').html() !== undefined || $('.missing-warning').html() !== "" ) {
+				$('.missing-warning').empty();
+			};
+		};
+
+		var numStops;
+		if (numCommas === 2) {
+			numStops = 3;
+		} else if (numCommas === 1) {
+			numStops = 2;
+		} else if (numCommas === 0) {
+			numStops = 1;
+		};
+
+		stopLoc1 = stops.split(',')[0]; // Costco
+		if (numStops >= 2) {
+			stopLoc2 = stops.split(',')[1]; // CVS
+		};
+		if (numStops >= 3) {
+			stopLoc3 = stops.split(',')[2]; // Trader Joe's
+		};
 
 		if (oneWayOrReturn === "out-and-back") {
-
-			origin = $('.origin_address').val(); // 55 Brighton Ave San Francisco, CA
-			stopLoc1 = $('.stop_location_1').val(); // Costco
-			if ($('.stop_location_2').length) {
-				stopLoc2 = $('.stop_location_2').val(); // CVS
-			};
-			if ($('.stop_location_3').length) {
-				stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
-			};
-			destination = origin;
-
-			var numStops;
-			if (stopLoc3 !== null && stopLoc3 !== undefined) {
-				numStops = 3;
-			} else if (stopLoc2 !== null && stopLoc2 !== undefined) {
-				numStops = 2;
-			} else {
-				numStops = 1;
-			};
-
 			var originGeo = getGeo(origin);
 			originGeo.then(function(results) {
 
@@ -550,37 +524,6 @@ $(function() {
 				});
 			});
 		} else if (oneWayOrReturn === "on-my-way") {
-
-			origin = $('.origin_address').val(); // 343 Vernon St San Francisco, CA
-			stopLoc1 = $('.stop_location_1').val(); // Costco
-			if ($('.stop_location_2').length) {
-				stopLoc2 = $('.stop_location_2').val(); // CVS
-			};
-			if ($('.stop_location_3').length) {
-				stopLoc3 = $('.stop_location_3').val(); // Trader Joe's
-			};
-			destination = $('.destination_address').val(); // 633 Folsom St San Francisco, CA
-
-			// var origin = "1982 Rockledge Rd Atlanta, GA";
-			// var stopLoc1 = "Wendy's";
-			// var stopLoc2 = "Ace Hardware";
-			// var stopLoc3 = "Publix";
-			// var destination = "701 Chase Ln Norcross, GA";
-
-			// var origin = "633 Folsom St San Francisco, CA";
-			// var stopLoc1 = "Trader Joe's";
-			// var stopLoc2 = "gas station";
-			// var stopLoc3 = "Costco";
-			// var destination = "55 Brighton Ave San Francisco, CA";
-
-			var numStops;
-			if (stopLoc3 !== null && stopLoc3 !== undefined) {
-				numStops = 3;
-			} else if (stopLoc2 !== null && stopLoc2 !== undefined) {
-				numStops = 2;
-			} else {
-				numStops = 1;
-			}
 
 			var p1 = getGeo(origin);
 			var p2 = getGeo(destination);
@@ -960,6 +903,19 @@ $(function() {
 	// 		oneWayOrReturn = "on-my-way";
 	// 	};
 	// });
+
+// ----------- Sample Addresses (on-my-way) -----------
+	// var origin = "1982 Rockledge Rd Atlanta, GA";
+	// var stopLoc1 = "Wendy's";
+	// var stopLoc2 = "Ace Hardware";
+	// var stopLoc3 = "Publix";
+	// var destination = "701 Chase Ln Norcross, GA";
+
+	// var origin = "633 Folsom St San Francisco, CA";
+	// var stopLoc1 = "Trader Joe's";
+	// var stopLoc2 = "gas station";
+	// var stopLoc3 = "Costco";
+	// var destination = "55 Brighton Ave San Francisco, CA";
 
 // -------- With radarSearch --------
 
