@@ -5,7 +5,7 @@ function notTooClose(point, arrOfPts) {
 	if (arrOfPts === []) {
 		return true;
 	}
-	var dist = 100; // 100 meters (arbitrarily small distance)
+	var dist = 200; // 100 meters (arbitrarily small distance)
 	var farEnough = true; // "farEnough" is another way of saying "notTooClose" w/o same name as function
 	var pointLatLng = new google.maps.LatLng(point.geometry.location.G, point.geometry.location.K);
 
@@ -31,3 +31,10 @@ function cullNeighboringDuplicates(arrOfPts) {
 	});
 	return acceptedPts;
 };
+
+// === NOT YET WRITTEN === This function would check to see how far out you have to go from the origin before you're able to find a point of the category being looked for.
+// function cullPointsTooFarOut(arrOfPts, origin) {
+// 	// var ranges = [2000, 4000, 6000, 8000, 10000, 20000, 50000];
+// 	var ranges = [2000, 4000, 6000, 8000]
+// 	// 
+// };

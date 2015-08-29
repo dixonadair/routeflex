@@ -5,6 +5,14 @@ $(function() {
 
 	// ====================================================
 
+	// set some "debugging variables" (when a variable is set to true, it means that more information than would normally appear on the final user-facing site will appear, which helps me with debugging)
+
+	var showPolylineBufferOnMap = true;
+	var showRectangleAroundPolylineBuffer = true;
+	var consoleLogEachRouteImprovement = true;
+
+	// ====================================================
+
 	// Out-and-back vs On-my-way searches
 	var autocomplete, autocompleteOrigin, autocompleteDestination;
 
@@ -129,31 +137,32 @@ $(function() {
 	// ====================================================
 
 	function createMarker(place) {
-	  var marker = new google.maps.Marker({
-	    map: map,
-	    position: place.geometry.location,
-	    icon: {
-	      // Star
-	      path: 'M 0,-24 6,-7 24,-7 10,4 15,21 0,11 -15,21 -10,4 -24,-7 -6,-7 z',
-	      fillColor: '#ffff00',
-	      fillOpacity: 1,
-	      scale: 1/4,
-	      strokeColor: '#bd8d2c',
-	      strokeWeight: 1
-	    }
-	  });
+		var marker = new google.maps.Marker({
+	    	map: map,
+	    	position: place.geometry.location,
+	    	icon: {
+	    		// Star
+	    		path: 'M 0,-24 6,-7 24,-7 10,4 15,21 0,11 -15,21 -10,4 -24,-7 -6,-7 z',
+	    		fillColor: '#ffff00',
+	    		fillOpacity: 1,
+	    		scale: 1/4,
+	    		strokeColor: '#bd8d2c',
+	    		strokeWeight: 1
+	    	}
+		});
 
-	  google.maps.event.addListener(marker, 'click', function() {
-	    service.getDetails(place, function(result, status) {
-	      if (status != google.maps.places.PlacesServiceStatus.OK) {
-	        alert(status);
-	        return;
-	      }
-	      infoWindow.setContent(result.name, result.formatted_address);
-	      console.log(result);
-	      infoWindow.open(map, marker);
-	    });
-	  });
+		google.maps.event.addListener(marker, 'click', function() {
+	    	service.getDetails(place, function(result, status) {
+	    		if (status != google.maps.places.PlacesServiceStatus.OK) {
+	        		alert(status);
+	        		return;
+	    		}
+	    		var markerWindowContent = result.name + "<br>" + result.formatted_address.split(',')[0] + "<br>" + result.formatted_address.split(',')[1] + result.formatted_address.split(',')[2] + "<br>" + result.formatted_address.split(',')[3];
+	    		infoWindow.setContent(markerWindowContent);
+	    		// console.log(result);
+	    		infoWindow.open(map, marker);
+	    	});
+		});
 	};
 
 	// ====================================================
@@ -168,8 +177,8 @@ $(function() {
 		var bestDistance = 40000000; // arbitrarily large number (~25,000 miles in meters)
 		var bestResponse; // best route, based on bestTime
 		var bestWaypts; // the waypts that are visited when taking the best route
-		var len = optionsArr.length;
-		console.log(len, "len");
+		var len = 10; // optionsArr.length;
+		// console.log(len, "len");
 
 		for (var i=0; i<len; i++) {
 			setTimeout(
@@ -215,9 +224,9 @@ $(function() {
 				  			}
 				  			directionsDisplay.setDirections(bestResponse);
 				  			// console.log(bestWaypts);
-				  			if (timeOrDist === "distance") {
+				  			if (timeOrDist === "distance" && consoleLogEachRouteImprovement === true) {
 					  			console.log(bestDistance);
-					  		} else {
+					  		} else if (timeOrDist === "time" && consoleLogEachRouteImprovement === true) {
 					  			console.log(bestTime);
 					  		}
 				  		} else {
@@ -371,7 +380,6 @@ $(function() {
 
 		var myShape = new google.maps.Polygon({
 			paths: bufferCoords
-			// map: map
 		});
 		return myShape;
 	};
@@ -445,7 +453,7 @@ $(function() {
 
 				// ----- With nearbySearch -----
 
-				var setRadius = '3000';
+				var setRadius = '6000';
 				searchParams1 = {
 					location: searchAroundHere,
 					radius: setRadius,
@@ -493,19 +501,11 @@ $(function() {
 						newResults = [[]];
 					};
 
-					// console.log(newResults, "newResults before pushing stuff in");
-
-					// -------------------------------------
-						// var culled3 = cullNeighboringDuplicates(results[2]);
-						// console.log(culled3, "culled3");
-						// console.log(results[2], "results[2]");
-
 					results.forEach(function(results1, index0to2) {
 						newResults[index0to2] = cullNeighboringDuplicates(results1);
 					});
 					newResults.forEach(function(results) {
 						results.forEach(function(result) {
-							// console.log(result, "result to make marker out of");
 							createMarker(result);
 						});
 					});
@@ -576,7 +576,14 @@ $(function() {
 
 		      		// The below makes use of Kamal's function
 		      		var myShape = makeBuffer(results);
-		      		console.log(myShape, "myShape");
+		      		if (showPolylineBufferOnMap === true) {
+		      			myShape.setMap(map);
+		      		};
+		      		var myBufferCoords = returnBufferCoords(results);
+		      		var polylineExtremities = polylineBufferExtremities(myBufferCoords);
+		      		if (showRectangleAroundPolylineBuffer === true) {
+		      			polylineExtremities.setMap(map);
+		      		};
 
 		      		var promises = [];
 		      		promises.push(stop1Options);
