@@ -8,8 +8,10 @@ $(function() {
 	// set some "debugging variables" (when a variable is set to true, it means that more information than would normally appear on the final user-facing site will appear, which helps me with debugging)
 
 	var showPolylineBufferOnMap = true;
-	var showRectangleAroundPolylineBuffer = true;
-	var consoleLogEachRouteImprovement = true;
+	var showRectangleAroundPolylineBuffer = false;
+	var consoleLogEachRouteImprovement = false;
+	var numPossibilitiesToConsider = 20; // set to null to consider all possibilities in compareStopOptions function
+	var bufferThickness = 1; // 1 approx. equals 1 kilometer;
 
 	// ====================================================
 
@@ -34,6 +36,12 @@ $(function() {
 			$('.end-address').html(destinationField);
 		};
 	});
+
+	// ====================================================
+
+	// $('.view-buffer').on('click', function(e) {
+	// 	// 
+	// });
 
 	// ====================================================
 
@@ -177,9 +185,15 @@ $(function() {
 		var bestDistance = 40000000; // arbitrarily large number (~25,000 miles in meters)
 		var bestResponse; // best route, based on bestTime
 		var bestWaypts; // the waypts that are visited when taking the best route
-		var len = 10; // optionsArr.length;
-		// console.log(len, "len");
-
+		var len;
+		if (numPossibilitiesToConsider === null) {
+			len = optionsArr.length;
+			console.log("it equals null");
+		} else if (numPossibilitiesToConsider < optionsArr.length) {
+			len = numPossibilitiesToConsider;
+		} else if (numPossibilitiesToConsider >= optionsArr.length) {
+			len = optionsArr.length;
+		};
 		for (var i=0; i<len; i++) {
 			setTimeout(
 			(function(i) {
@@ -316,6 +330,7 @@ $(function() {
 	// ====================================================
 
 	// (Kamal's Function)
+	// bufferThickness is set at the top of this document
 	function returnBufferCoords(polyline) {
 		var overviewPath = polyline.routes[0].overview_path, overviewPathGeo = [];
 		for (var i=0; i<overviewPath.length; i++) {
@@ -323,7 +338,7 @@ $(function() {
 		};
 		
 		// var distance = 10/111.12; // Roughly 10km
-		var distance = 2/100;
+		var distance = bufferThickness/100;
 		var geoInput = {
 			type: "LineString",
 			coordinates: overviewPathGeo
@@ -354,7 +369,7 @@ $(function() {
 		};
 		
 		// var distance = 10/111.12; // Roughly 10km
-		var distance = 2/100;
+		var distance = bufferThickness/100;
 		var geoInput = {
 			type: "LineString",
 			coordinates: overviewPathGeo
@@ -534,37 +549,6 @@ $(function() {
 			    var p1result = results[0][0].geometry.location;
 			    var p2result = results[1][0].geometry.location;
 
-			    // set up rectangular search bounds
-			    var bounds = makeBounds(p1result, p2result);
-			    // showBoundsArea(p1result, p2result);
-
-			    // search request params for each stop entry
-			    var searchRequestParams1 = {
-			    	bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-			    	keyword: stopLoc1
-			    };
-			    if (numStops >= 2) {
-			    	var searchRequestParams2 = {
-			    		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-			    		keyword: stopLoc2
-			    	};
-			    };
-			    if (numStops >= 3) {
-			    	var searchRequestParams3 = {
-			    		bounds: new google.maps.LatLngBounds(bounds[0], bounds[1]),
-			    		keyword: stopLoc3
-			    	};
-			    };
-
-			    // set up promises for each search of stop within bounds area
-			    var stop1Options = performSearch(searchRequestParams1);
-			    if (numStops >= 2) {
-			    	var stop2Options = performSearch(searchRequestParams2);
-			    };
-			    if (numStops >= 3) {
-			    	var stop3Options = performSearch(searchRequestParams3);
-			    };
-
 			    // direct directions request (get non-stop route going from origin to destination)
 			    var directDirRequest = {
 			    	origin: origin,
@@ -580,10 +564,42 @@ $(function() {
 		      			myShape.setMap(map);
 		      		};
 		      		var myBufferCoords = returnBufferCoords(results);
-		      		var polylineExtremities = polylineBufferExtremities(myBufferCoords);
+		      		var polylineExtremities = polylineBufferExtremities(myBufferCoords, "shape");
 		      		if (showRectangleAroundPolylineBuffer === true) {
 		      			polylineExtremities.setMap(map);
 		      		};
+
+		      		// set up search bounds
+		      		var myBounds = polylineBufferExtremities(myBufferCoords, "bounds");
+
+		      		// search request params for each stop entry
+		      		var searchRequestParams1 = {
+		      			bounds: myBounds,
+		      			keyword: stopLoc1
+		      		};
+		      		if (numStops >= 2) {
+		      			var searchRequestParams2 = {
+		      				bounds: myBounds,
+		      				keyword: stopLoc2
+		      			};
+		      		};
+		      		if (numStops >= 3) {
+		      			var searchRequestParams3 = {
+		      				bounds: myBounds,
+		      				keyword: stopLoc3
+		      			};
+		      		};
+
+		      		// set up promises for each search of stop within bounds area
+		      		var stop1Options = performSearch(searchRequestParams1);
+		      		if (numStops >= 2) {
+		      			var stop2Options = performSearch(searchRequestParams2);
+		      		};
+		      		if (numStops >= 3) {
+		      			var stop3Options = performSearch(searchRequestParams3);
+		      		};
+
+		      		// =============================
 
 		      		var promises = [];
 		      		promises.push(stop1Options);
@@ -627,7 +643,7 @@ $(function() {
 	      		  			});
 	      		  		});
 
-	      		  		console.log(newResults);
+	      		  		// console.log(newResults);
 
 						var combinations;
 						if (numStops === 3) {

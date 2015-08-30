@@ -1,4 +1,7 @@
-function polylineBufferExtremities(polylineBufferShape) {
+// shapeOrBounds parameter tells function whether to return the bounds shape object or latlngbounds object
+// the two options are "shape" and "bounds"
+
+function polylineBufferExtremities(polylineBufferShape, shapeOrBounds) {
 	var north = polylineBufferShape[0].G;
 	var south = polylineBufferShape[0].G;
 	var east = polylineBufferShape[0].K;
@@ -23,9 +26,14 @@ function polylineBufferExtremities(polylineBufferShape) {
 	ne = new google.maps.LatLng(north, east);
 	se = new google.maps.LatLng(south, east);
 	sw = new google.maps.LatLng(south, west);
+	var rectangleBounds = new google.maps.LatLngBounds(sw, ne);
 	var bufferCoords = [nw, ne, se, sw];
 	var bufferRectangle = new google.maps.Polygon({
 		paths: bufferCoords
 	});
-	return bufferRectangle;
+	if (shapeOrBounds === "shape") {
+		return bufferRectangle;
+	} else {
+		return rectangleBounds;
+	};
 };
