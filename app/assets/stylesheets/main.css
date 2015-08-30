@@ -14,6 +14,10 @@
 	display: inline-block;
 }*/
 
+.roundtrip {
+    display: inline;
+}
+
 .main-nav {
     vertical-align: center;
 }

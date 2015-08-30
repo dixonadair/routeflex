@@ -7,7 +7,8 @@ $(function() {
 
 	// set some "debugging variables" (when a variable is set to true, it means that more information than would normally appear on the final user-facing site will appear, which helps me with debugging)
 
-	var showPolylineBufferOnMap = true;
+	var useSampleAddresses = true;
+	var showPolylineBufferOnMap = false;
 	var showRectangleAroundPolylineBuffer = false;
 	var consoleLogEachRouteImprovement = false;
 	var numPossibilitiesToConsider = 20; // set to null to consider all possibilities in compareStopOptions function
@@ -23,7 +24,6 @@ $(function() {
 	var destinationField = $("<label for=''>End Address:</label><input class='destination_address form-control autocomplete' placeholder='20 Pine St Anytown CA'><br>");
 
 	$('.roundtrip').on('click', function(e) {
-		// e.preventDefault();
 		var on = e.target.checked;
 		console.log(on);
 		if (on === true) {
@@ -39,8 +39,24 @@ $(function() {
 
 	// ====================================================
 
+	// ============= Still working on this! ===============
+	// // View Buffer or Not
+	// var viewBufferChecked = false;
 	// $('.view-buffer').on('click', function(e) {
-	// 	// 
+	// 	if (viewBufferChecked === false) {
+	// 		e.target.checked = true;
+	// 		viewBufferChecked = true;
+	// 	} else {
+	// 		e.target.checked = false;
+	// 		viewBufferChecked = false;
+	// 	}
+	// 	var isOn = e.target.checked;
+	// 	console.log(isOn);
+	// 	if (isOn === true) {
+	// 		showPolylineBufferOnMap = true;
+	// 	} else {
+	// 		showPolylineBufferOnMap = false;
+	// 	};
 	// });
 
 	// ====================================================
