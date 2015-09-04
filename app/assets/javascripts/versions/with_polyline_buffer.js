@@ -14,12 +14,15 @@ $(function() {
 	var showRectangleAroundPolylineBuffer = false;
 	var consoleLogEachRouteImprovement = false;
 	var numPossibilitiesToConsider = 20; // set to null to consider all possibilities in compareStopOptions function
-	var bufferThickness = 1; // 1 approx. equals 1 kilometer;
+	var bufferThickness = 5; // 1 approx. equals 1 kilometer;
 
 	// ====================================================
 
 	// Out-and-back vs On-my-way searches
 	var autocomplete, autocompleteOrigin, autocompleteDestination;
+
+	autocompleteOrigin = new google.maps.places.Autocomplete($('.autocomplete')[0]);
+	autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
 
 	// The variable "oneWayOrReturn" says whether the user is searching for stops along their way from point A to point B ("on-my-way") or is simply going out from point A to do errands and then return to point A ("out-and-back"); the default is "on-my-way"
 	var oneWayOrReturn = "on-my-way";
@@ -36,30 +39,33 @@ $(function() {
 			oneWayOrReturn = "on-my-way";
 			$('.start-address-label').text("Start Address");
 			$('.end-address').html(destinationField);
+			autocompleteDestination = new google.maps.places.Autocomplete($('.autocomplete')[1]);
 		};
 	});
 
 	// ====================================================
 
-	// ============= Still working on this! ===============
-	// // View Buffer or Not
-	// var viewBufferChecked = false;
-	// $('.view-buffer').on('click', function(e) {
-	// 	if (viewBufferChecked === false) {
-	// 		e.target.checked = true;
-	// 		viewBufferChecked = true;
-	// 	} else {
-	// 		e.target.checked = false;
-	// 		viewBufferChecked = false;
-	// 	}
-	// 	var isOn = e.target.checked;
-	// 	console.log(isOn);
-	// 	if (isOn === true) {
-	// 		showPolylineBufferOnMap = true;
-	// 	} else {
-	// 		showPolylineBufferOnMap = false;
-	// 	};
-	// });
+	// // View Polyline Buffer or Not Checkbox
+	var viewBufferCheckbox = $('.checkboxes input:nth-child(2)')
+	viewBufferCheckbox.prop('checked', false);
+	var viewBufferChecked = false;
+	viewBufferCheckbox.on('click', function(e) {
+		if (viewBufferChecked === false) {
+			viewBufferCheckbox.prop('checked', true);
+			viewBufferChecked = true;
+		} else if (viewBufferChecked === true) {
+			viewBufferCheckbox.prop('checked', false);
+			viewBufferChecked = false;
+		}
+		var isOn = e.target.checked;
+		if (isOn === true) {
+			showPolylineBufferOnMap = true;
+			console.log("showPolylineBufferOnMap", showPolylineBufferOnMap);
+		} else {
+			showPolylineBufferOnMap = false;
+			console.log("showPolylineBufferOnMap", showPolylineBufferOnMap);
+		};
+	});
 
 	// ====================================================
 
@@ -86,8 +92,7 @@ $(function() {
 	var centerATL = new google.maps.LatLng(33.8, -84.3);
 	var mapOptions = {
     	zoom: 11,
-    	mapTypeId: google.maps.MapTypeId.ROADMAP,
-    	center: centerSF
+    	mapTypeId: google.maps.MapTypeId.ROADMAP
 	}
 	map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 	infoWindow = new google.maps.InfoWindow();
@@ -114,6 +119,8 @@ $(function() {
 		} else {
 			console.log('Geolocation not available');
 		};
+	} else {
+		map.setCenter(centerSF);
 	};
 
 	// ====================================================
@@ -567,8 +574,13 @@ $(function() {
 			// -----------------------------------
 
 			Promise.all([p1, p2]).then(function(results) {
+
+				console.log(results);
+
 			    var p1result = results[0][0].geometry.location;
 			    var p2result = results[1][0].geometry.location;
+
+			    console.log(p1result, "p1result");
 
 			    // direct directions request (get non-stop route going from origin to destination)
 			    var directDirRequest = {

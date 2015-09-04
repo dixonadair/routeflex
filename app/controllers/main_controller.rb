@@ -6,6 +6,9 @@ class MainController < ApplicationController
   def index
   end
 
+  def about
+  end
+
   def info
   	Yelp.client.configure do |config|
   		config.consumer_key = ENV['CONSUMER_KEY']
